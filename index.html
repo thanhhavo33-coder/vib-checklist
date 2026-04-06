@@ -1603,9 +1603,33 @@ document.getElementById('rSite').innerHTML='<option value="">Tất cả Site</op
 document.getElementById('emModal').addEventListener('click',e=>{if(e.target===document.getElementById('emModal'))closeEmail();});
 document.getElementById('saveModal').addEventListener('click',e=>{if(e.target===document.getElementById('saveModal'))closeSave();});
 document.getElementById('rmModal').addEventListener('click',e=>{if(e.target===document.getElementById('rmModal'))closeRoomModal();});
+async function testJBin(){
+  toast('⏳ Đang test JSONBin...');
+  try{
+    const r=await fetch(JBIN_URL+'/latest',{headers:{'X-Master-Key':JBIN_KEY,'X-Bin-Meta':'false'}});
+    const txt=await r.text();
+    if(r.ok){toast('✅ Kết nối OK! '+txt.slice(0,60));console.log('JSONBin OK:',txt);}
+    else{toast('❌ Lỗi '+r.status+': '+txt.slice(0,60));console.error('JSONBin:',r.status,txt);}
+  }catch(e){toast('❌ Không kết nối được: '+e.message);console.error(e);}
+}
+async function resetBin(){
+  if(!confirm('Reset toàn bộ lịch sử trên JSONBin về rỗng?'))return;
+  toast('⏳ Đang reset...');
+  try{
+    const r=await fetch(JBIN_URL,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JBIN_KEY},
+      body:'[]'
+    });
+    const txt=await r.text();
+    if(r.ok){
+      localStorage.setItem(KH,'[]');
+      document.getElementById('tb-hist').textContent=0;
+      rHist();toast('✅ Reset thành công!');console.log('Reset OK:',txt);
+    }else{toast('❌ Reset thất bại '+r.status+': '+txt.slice(0,60));console.error(txt);}
+  }catch(e){toast('❌ Lỗi: '+e.message);}
+}
 load();render();const _bs=document.getElementById('btnSave');if(_bs)_bs.style.display='';
-// Tự động kéo cloud khi khởi động
-;
 </script>
 </body>
 </html>
