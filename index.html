@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0054)file:///Users/Thanh/Downloads/vib_checklist_v3_21.html -->
+<!-- saved from url=(0054)file:///Users/Thanh/Downloads/vib_checklist_v3_22.html -->
 <html lang="vi"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -2451,9 +2451,11 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 
 <!-- HISTORY VIEW -->
 <div id="v-history" style="display:none">
-  <div style="padding:10px 20px 0;display:flex;align-items:center;gap:10px">
+  <div style="padding:10px 20px 0;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
     <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">☁️ Dữ liệu dùng chung qua JSONBin</span>
-    <button class="btn bg bsm" onclick="rHist()" style="margin-left:auto">🔄 Tải lại từ JSONBin</button>
+    <button class="btn bg bsm" onclick="testJBin()" style="border-color:var(--yellow);color:var(--yellow)">🔌 Test kết nối</button>
+    <button class="btn bg bsm" onclick="resetBin()" style="border-color:var(--red);color:var(--red)">🗑 Reset Bin</button>
+    <button class="btn bg bsm" onclick="rHist()" style="margin-left:auto">🔄 Tải lại</button>
   </div>
   <div class="hw" id="hc"></div>
 </div>
@@ -2585,7 +2587,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
   <div class="modal" style="max-width:420px">
     <div class="mhdr"><span class="mtit">💾 Lưu báo cáo hôm nay</span><button class="bico" onclick="closeSave()">✕</button></div>
     <div class="mbody">
-      <p style="font-size:12px;color:var(--text2);line-height:1.7">Lưu kết quả kiểm tra <strong id="saveDate"></strong> vào lịch sử.</p>
+      <p style="font-size:12px;color:var(--text2);line-height:1.7">Lưu kết quả kiểm tra <strong id="saveDate">Thứ Hai, 6 tháng 4, 2026</strong> vào lịch sử.</p>
       <div style="margin-top:8px"><div class="flbl" style="margin-bottom:4px">Người kiểm tra</div><input class="finp" id="saveName" placeholder="Họ tên nhân viên"></div>
       <div id="syncStatus" style="display:none;margin-top:10px;padding:8px 12px;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px"></div>
     </div>
@@ -2695,26 +2697,21 @@ function load(){try{const d=JSON.parse(localStorage.getItem(KT)||'{}');CK=d.CK||
 // ── History: đọc/ghi JSONBin (shared) + localStorage (cache) ──
 async function lHist(){
   try{
-    // X-Bin-Meta: false → trả thẳng data, không wrap thêm
-    const r=await fetch(JBIN_URL,{
-      headers:{
-        'X-Master-Key':JBIN_KEY,
-        'X-Access-Key':JBIN_KEY,
-        'X-Bin-Meta':'false'
-      }
+    // JSONBin v3: GET trả {"record":..., "metadata":{...}}
+    const r=await fetch(JBIN_URL+'/latest',{
+      headers:{'X-Master-Key':JBIN_KEY,'X-Bin-Meta':'false'}
     });
-    if(!r.ok)throw new Error('JSONBin '+r.status);
+    if(!r.ok)throw new Error('JSONBin GET '+r.status);
     const raw=await r.json();
-    // JSONBin có thể trả [] hoặc {"data":[]} hoặc {"record":[]}
-    let arr=raw;
-    if(!Array.isArray(raw)){
-      arr=raw.record||raw.data||raw.entries||[];
-    }
+    // X-Bin-Meta:false → trả thẳng record (array hoặc object)
+    // Nếu vẫn wrap thì đọc .record
+    let arr=Array.isArray(raw)?raw:(raw.record||raw.data||[]);
+    if(!Array.isArray(arr))arr=[];
     localStorage.setItem(KH,JSON.stringify(arr));
     return arr;
   }catch(e){
-    console.warn('lHist fallback local:',e);
-    try{return JSON.parse(localStorage.getItem(KH)||'[]');}catch(e2){return[];}
+    console.warn('JSONBin GET lỗi, dùng cache local:',e.message);
+    return lHistLocal();
   }
 }
 async function sHist(arr){
@@ -2723,12 +2720,15 @@ async function sHist(arr){
     method:'PUT',
     headers:{
       'Content-Type':'application/json',
-      'X-Master-Key':JBIN_KEY,
-      'X-Access-Key':JBIN_KEY
+      'X-Master-Key':JBIN_KEY
     },
     body:JSON.stringify(arr)
   });
-  if(!r.ok)throw new Error('sHist JSONBin '+r.status);
+  if(!r.ok){
+    const t=await r.text().catch(()=>'');
+    throw new Error('JSONBin PUT '+r.status+' '+t);
+  }
+  return r;
 }
 function lHistLocal(){try{return JSON.parse(localStorage.getItem(KH)||'[]');}catch(e){return[];}}
 
