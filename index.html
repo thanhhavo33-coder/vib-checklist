@@ -1169,13 +1169,14 @@ function renderReport(){
   // 2 col: tầng + site
   html+=`<div class="grid-2">`;
   html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">🏢 Tầng xuất hiện lỗi <span class="sec-badge sb-red">${floorRank.length} tầng</span></span></div><div class="chart-wrap">`;
-  if(!floorRank.length){html+=`<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">✅ Không có lỗi.</div>`;}
-  else floorRank.forEach(([floor,cnt])=>{
+  if(!floorRank.length){html+='<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">✅ Không có lỗi.</div>';}
+  else{floorRank.forEach(([floor,cnt])=>{
     const pct=Math.round(cnt/maxFloor*100);
-    html+=`<div class="chart-row"><span class="chart-lbl">${floor}</span>
-      <div class="chart-bar-wrap"><div class="chart-bar bar-org" style="width:${pct}%">${pct>20?cnt+' lần':''}</div></div>
-      <span class="chart-num">${cnt} lần</span></div>`;
-  });
+    const barTxt=pct>20?cnt+' lần':'';
+    html+='<div class="chart-row"><span class="chart-lbl">'+floor+'</span>';
+    html+='<div class="chart-bar-wrap"><div class="chart-bar bar-org" style="width:'+pct+'%">'+barTxt+'</div></div>';
+    html+='<span class="chart-num">'+cnt+' lần</span></div>';
+  });}
   html+=`</div></div>`;
 
   html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">🏗 Hiện trạng theo Site</span></div><div class="chart-wrap">`;
@@ -1197,7 +1198,7 @@ function renderReport(){
 
   // Phòng ổn định
   html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">✅ Phòng ổn định <span class="sec-badge sb-grn">${stableRooms.length} phòng</span></span></div>`;
-  if(!stableRooms.length){html+=`<div style="padding:14px;color:var(--text3);font-size:12px">Chưa có phòng nào ổn định hoàn toàn.</div>`;}
+  if(!stableRooms.length){html+='<div style="padding:14px;color:var(--text3);font-size:12px">Chưa có phòng nào ổn định hoàn toàn.</div>';}
   else{
     html+=`<div class="rtable"><div class="rtable-hdr" style="grid-template-columns:80px 1fr 80px 60px"><span>Phòng</span><span>Site / Tầng</span><span>Ngày OK</span><span>Tỷ lệ</span></div>`;
     stableRooms.slice(0,15).forEach(r=>{
@@ -1614,11 +1615,6 @@ document.getElementById('rSite').innerHTML='<option value="">Tất cả Site</op
 document.getElementById('emModal').addEventListener('click',e=>{if(e.target===document.getElementById('emModal'))closeEmail();});
 document.getElementById('saveModal').addEventListener('click',e=>{if(e.target===document.getElementById('saveModal'))closeSave();});
 document.getElementById('rmModal').addEventListener('click',e=>{if(e.target===document.getElementById('rmModal'))closeRoomModal();});
-    else{toast('❌ Lỗi '+r.status+': '+txt.slice(0,60));console.error('JSONBin:',r.status,txt);}
-  }catch(e){toast('❌ Không kết nối được: '+e.message);console.error(e);}
-}
-  }catch(e){toast('❌ Lỗi: '+e.message);}
-}
 load();render();
 
 // Auto-refresh số lịch sử từ JSONBin mỗi 30 giây
@@ -1641,7 +1637,7 @@ async function autoRefreshBadge(){
     }
   }catch(e){}
 }
-setInterval(autoRefreshBadge, 30000); // mỗi 30 giây// btnSave chỉ trong modal, nav luôn hiển thị
+setInterval(autoRefreshBadge, 30000);
 </script>
 </body>
 </html>
