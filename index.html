@@ -2057,87 +2057,72 @@ async function pollFloorSync(){
 
     const dateStr=new Date().toISOString().slice(0,10);
     const today=hist.find(h=>h._type==='daily'&&h.date===dateStr);
-    // Kiểm tra reset flag — máy khác bấm Phiên mới
+
+    // Reset flag — máy khác bấm Phiên mới
     const resetEntry=hist.find(h=>h._type==='reset'&&h.date===dateStr);
     const lastResetTs=parseInt(localStorage.getItem('vib3_last_reset')||'0');
     if(resetEntry&&resetEntry.ts>lastResetTs){
       localStorage.setItem('vib3_last_reset',String(resetEntry.ts));
-      if(Object.keys(FLOOR_CHECKED).length>0||Object.keys(CK).length>0){
-        CK={};NT={};EX.clear();save();
-        FLOOR_CHECKED={};saveFC();
-        render();
-        toast('🔄 Phiên mới từ máy khác — đã reset toàn bộ!');
-      }
-      return;
-    }
-    // Nếu không có daily entry hôm nay → reset nếu cần
-    if(!today||!today.floors){
-      if(Object.keys(FLOOR_CHECKED).length>0){
-        FLOOR_CHECKED={};saveFC();
-        const rooms2=getRooms();
-        const pairs2=[...new Map(rooms2.map(r=>[r.site+'|'+r.floor,{site:r.site,floor:r.floor}])).values()];
-        pairs2.forEach(p=>_refreshFloorBtn(p.site,p.floor));
-      }
+      CK={};NT={};EX.clear();save();
+      FLOOR_CHECKED={};saveFC();
+      render();
+      toast('🔄 Phiên mới từ máy khác — đã reset!');
       return;
     }
 
-    // 1. Merge CK từ cloud rooms — luôn chạy mỗi lần poll
+    if(!today) return;
+
+    // ── Merge CK từ rooms trên cloud ──
+    const cloudRooms=today.rooms||{};
     let ckChanged=false;
-    if(today.rooms){
-      Object.entries(today.rooms).forEach(([rid,entry])=>{
-        if(!entry.checks) return;
-        if(!CK[rid]){
-          CK[rid]={...entry.checks};
+    Object.entries(cloudRooms).forEach(([rid,entry])=>{
+      if(!entry||!entry.checks) return;
+      const key=String(rid);
+      if(!CK[key]) CK[key]={};
+      Object.entries(entry.checks).forEach(([dev,val])=>{
+        if(!CK[key][dev]&&val){   // chỉ merge nếu local chưa có
+          CK[key][dev]=val;
           ckChanged=true;
-        } else {
-          // Merge từng thiết bị: cloud ghi vào nếu local chưa có
-          Object.entries(entry.checks).forEach(([k,v])=>{
-            if(!CK[rid][k]){
-              CK[rid][k]=v;
-              ckChanged=true;
-            }
-          });
         }
       });
-      if(ckChanged){
-        save();
-        // Cập nhật từng card — không render() toàn bộ để tránh mất UI state
-        Object.keys(today.rooms).forEach(rid=>{
-          refCard(rid);
-        });
-        updSum();
-      }
+    });
+    if(ckChanged){
+      save();
+      // Cập nhật UI từng phòng đã merge
+      Object.keys(cloudRooms).forEach(rid=>{
+        const el=document.getElementById('rc-'+rid);
+        if(el) refCard(rid);   // chỉ refCard nếu card đang trên màn hình
+      });
+      updSum();
     }
 
-    // 2. Cập nhật FLOOR_CHECKED từ cloud
+    // ── Merge FLOOR_CHECKED từ cloud ──
+    const cloudFloors=today.floors||{};
     let fcChanged=false;
-    Object.entries(today.floors).forEach(([k,v])=>{
-      if(v&&!FLOOR_CHECKED[k]){
-        FLOOR_CHECKED[k]=true;
-        fcChanged=true;
-      }
+    Object.entries(cloudFloors).forEach(([k,v])=>{
+      if(v&&!FLOOR_CHECKED[k]){ FLOOR_CHECKED[k]=true; fcChanged=true; }
     });
     if(fcChanged) saveFC();
 
-    // 3. Cập nhật UI nút OK tầng
-    const rooms=getRooms();
-    const pairs=[...new Map(rooms.map(r=>[r.site+'|'+r.floor,{site:r.site,floor:r.floor}])).values()];
-    pairs.forEach(p=>{
-      const key=fcKey(p.site,p.floor);
+    // ── Cập nhật UI nút OK tầng ──
+    const allRooms=getRooms();
+    const floorPairs=[...new Map(allRooms.map(r=>[r.site+'|||'+r.floor,{site:r.site,floor:r.floor}])).values()];
+    floorPairs.forEach(({site,floor})=>{
+      const key=fcKey(site,floor);
+      const btn=document.getElementById('fcb-'+key);
+      if(!btn) return;
       if(FLOOR_CHECKED[key]){
-        const btn=document.getElementById('fcb-'+key);
-        if(btn){
-          btn.textContent='✅ Đã lưu';
-          btn.style.cssText='padding:3px 14px;border-radius:5px;font-size:11px;font-weight:700;border:1.5px solid var(--green);background:var(--green);color:#fff;cursor:default;opacity:1;font-family:var(--sans)';
-          btn.onclick=null;
-        }
+        btn.textContent='✅ Đã lưu';
+        btn.style.cssText='padding:3px 14px;border-radius:5px;font-size:11px;font-weight:700;border:1.5px solid var(--green);background:var(--green);color:#fff;cursor:default;opacity:1;font-family:var(--sans)';
+        btn.onclick=null;
         const hdr=document.getElementById('fhdr-'+key);
         if(hdr) hdr.style.background='rgba(16,185,129,.08)';
-        _updateSiteBtn(p.site);
+        _updateSiteBtn(site);
       } else {
-        _refreshFloorBtn(p.site,p.floor);
+        _refreshFloorBtn(site,floor);
       }
     });
+
   }catch(e){console.warn('pollFloorSync:',e.message);}
 }
 setInterval(pollFloorSync, 10000); // mỗi 10 giây
