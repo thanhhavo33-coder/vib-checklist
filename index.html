@@ -1,0 +1,2119 @@
+<!-- VIB_BUILD_20260406_121540 -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIB — Kiểm tra phòng họp</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; connect-src 'self' https://api.jsonbin.io https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--bg2:#0f1117;--panel:#141720;--panel2:#1a1f2e;--border:#232840;--border2:#2e3550;--accent:#3b82f6;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--orange:#f97316;--purple:#8b5cf6;--text:#e2e8f0;--text2:#94a3b8;--text3:#4a5568;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans Thai',sans-serif;--r:8px;--sh:0 4px 24px rgba(0,0,0,.4)}
+body.light{--bg:#f0f2f8;--bg2:#e8ebf5;--panel:#fff;--panel2:#f8f9ff;--border:#dde3f0;--border2:#c8d0e8;--text:#1e2438;--text2:#4a5a7a;--text3:#9aa5c0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;font-size:13px}
+
+/* NAV */
+.nav{background:var(--panel);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.nav-logo{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:3px;color:var(--accent)}
+.nav-sep{width:1px;height:24px;background:var(--border2)}
+.nav-title{font-size:12px;color:var(--text2);font-weight:500}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.nav-date{font-family:var(--mono);font-size:10px;color:var(--text3);padding:4px 10px;background:var(--panel2);border:1px solid var(--border);border-radius:4px}
+.bico{background:none;border:1px solid var(--border2);border-radius:6px;color:var(--text2);width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
+.bico:hover{background:var(--panel2);border-color:var(--accent);color:var(--text)}
+
+/* TABS */
+.tab-bar{background:var(--panel);border-bottom:1px solid var(--border);padding:0 20px;display:flex;position:sticky;top:56px;z-index:190}
+.tab{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.5px;padding:10px 16px;border:none;background:none;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;text-transform:uppercase;display:flex;align-items:center;gap:5px}
+.tab:hover{color:var(--text2)}.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+.tbadge{background:var(--accent);color:#fff;border-radius:10px;padding:1px 6px;font-size:9px;font-weight:700}
+.tbadge.warn{background:var(--red)}
+
+/* SUMMARY */
+.sum-bar{padding:8px 20px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.si{display:flex;align-items:center;gap:5px;font-size:11px}
+.sl{color:var(--text3);font-family:var(--mono)}
+.sv{font-weight:700;font-family:var(--mono);font-size:13px}
+.sv-ok{color:var(--green)}.sv-fail{color:var(--red)}.sv-pend{color:var(--yellow)}.sv-tot{color:var(--accent)}
+.pw{flex:1;min-width:180px;display:flex;align-items:center;gap:8px}
+.pt{flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+.pf{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--green));transition:width .5s}
+.ppct{font-family:var(--mono);font-size:11px;color:var(--text2);font-weight:600;white-space:nowrap}
+
+/* FILTER BAR */
+.fbar{padding:9px 20px;background:var(--panel2);border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fsel{background:var(--panel);border:1px solid var(--border2);border-radius:6px;padding:6px 10px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;cursor:pointer}
+.fsel:focus{border-color:var(--accent)}
+.finput{background:var(--panel);border:1px solid var(--border2);border-radius:6px;padding:6px 12px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none;width:190px}
+.finput::placeholder{color:var(--text3)}.finput:focus{border-color:var(--accent)}
+.faction{margin-left:auto;display:flex;gap:6px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:6px;font-family:var(--sans);font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .15s;white-space:nowrap}
+.bp{background:var(--accent);color:#fff}.bp:hover{background:#2563eb}
+.bs{background:var(--green);color:#fff}.bs:hover{background:#059669}
+.bg{background:var(--panel);border:1px solid var(--border2);color:var(--text2)}.bg:hover{border-color:var(--accent);color:var(--text)}
+.bd{background:transparent;border:1px solid var(--border2);color:var(--text3)}.bd:hover{border-color:var(--red);color:var(--red)}
+.bor{background:var(--orange);color:#fff}.bor:hover{filter:brightness(1.1)}
+.bsm{padding:4px 10px;font-size:11px}
+
+/* SITE SECTION */
+.ss{margin:12px 20px}
+.sh{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:var(--r) var(--r) 0 0;border-bottom:2px solid var(--accent)}
+.stag{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 10px;border-radius:4px;background:var(--accent);color:#fff}
+.sname{font-weight:700;font-size:14px}
+.smeta{font-size:11px;color:var(--text3);margin-left:4px}
+.sstats{display:flex;gap:10px;align-items:center;font-size:11px;font-family:var(--mono)}
+.spbar{width:70px;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.spfill{height:100%;background:var(--green);border-radius:2px;transition:width .4s}
+.sha{margin-left:auto;display:flex;gap:6px}
+.swarn{color:var(--red);font-size:11px;font-weight:700}
+.rg{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);overflow:hidden}
+.rc{background:var(--panel);transition:background .15s;border-left:3px solid transparent}
+.rc:hover{background:var(--panel2)}
+.rc.ok{border-left-color:var(--green)}.rc.issue{border-left-color:var(--red)}.rc.pending{border-left-color:var(--border2)}
+.rh{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;user-select:none}
+.rname{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--accent)}
+.rfl{font-size:10px;color:var(--text3);font-family:var(--sans);font-weight:400;margin-left:4px}
+.dpills{display:flex;gap:3px;flex-wrap:wrap;margin-top:3px}
+.pill{font-size:9px;padding:1px 5px;border-radius:10px;background:var(--panel2);border:1px solid var(--border2);color:var(--text3);font-family:var(--mono)}
+.rst{margin-left:auto;display:flex;align-items:center;gap:5px}
+.rtog{font-size:10px;color:var(--text3)}
+.rb{padding:0 12px 10px;display:none}
+.rb.open{display:block;animation:sld .15s ease}
+@keyframes sld{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.sabar{display:flex;align-items:center;justify-content:space-between;padding:7px 0 8px;border-bottom:1px dashed var(--border2);margin-bottom:5px}
+.salbl{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:.5px;text-transform:uppercase}
+.bok{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:5px;font-size:11px;font-weight:700;border:1.5px solid var(--green);background:rgba(16,185,129,.08);color:var(--green);cursor:pointer;transition:all .15s;font-family:var(--sans)}
+.bok:hover:not(:disabled){background:rgba(16,185,129,.2)}.bok:disabled{opacity:.45;cursor:default;border-color:var(--border2);color:var(--text3);background:none}
+
+.bsave-room:hover{background:rgba(59,130,246,.2)}
+
+
+
+
+.cr{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);min-height:34px}
+.cr:last-of-type{border-bottom:none}
+.clbl{flex:1;font-size:12px;color:var(--text2);font-weight:500}
+.cg{display:flex;gap:3px}
+.chk{border:none;border-radius:4px;width:32px;height:26px;cursor:pointer;font-size:11px;font-weight:700;transition:all .15s;display:flex;align-items:center;justify-content:center;font-family:var(--mono)}
+.cok{background:var(--panel2);color:var(--text3)}.cok.on{background:var(--green);color:#fff}
+.cfl{background:var(--panel2);color:var(--text3)}.cfl.on{background:var(--red);color:#fff}
+.cna{background:var(--panel2);color:var(--text3);font-size:9px}.cna.on{background:var(--text3);color:var(--bg)}
+.ibox{margin:2px 0 4px;width:100%;background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.25);border-radius:5px;padding:5px 8px;color:var(--text);font-family:var(--sans);font-size:11px;outline:none;display:none;resize:vertical}
+.ibox.show{display:block}
+
+/* HISTORY */
+.hw{padding:20px}
+.hempty{text-align:center;padding:60px;color:var(--text3);font-size:13px;line-height:1.8}
+.hday{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.hdh{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--panel2);cursor:pointer;border-bottom:1px solid var(--border)}
+.hdh:hover{background:var(--border)}
+.hdate{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent)}
+.hchips{display:flex;gap:6px}
+.hc{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:10px;font-weight:700}
+.hc-ok{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.hc-fl{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.hc-pe{background:rgba(245,158,11,.1);color:var(--yellow);border:1px solid rgba(245,158,11,.3)}
+.hdb{display:none;padding:12px 14px}
+.hdb.open{display:block}
+.hsite{margin-bottom:10px}
+.hsn{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.hrg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:5px}
+.hr{background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:5px 9px;border-left:3px solid var(--border2)}
+.hr.h-ok{border-left-color:var(--green)}.hr.h-issue{border-left-color:var(--red)}.hr.h-pending{border-left-color:var(--border2)}
+.hrn{font-family:var(--mono);font-size:11px;font-weight:700}
+.hrd{font-size:10px;color:var(--text3);margin-top:1px}
+.hri{font-size:10px;color:var(--red);margin-top:1px}
+.hha{margin-left:auto;display:flex;gap:5px}
+
+/* ══════════════════════════════════
+   ANALYTICS TAB
+══════════════════════════════════ */
+.aw{padding:20px;max-width:1200px;margin:0 auto}
+.aempty{text-align:center;padding:60px;color:var(--text3);font-size:13px;line-height:2}
+.aflt{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px;padding:10px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:var(--r)}
+.aflt-lbl{font-size:11px;color:var(--text3);font-family:var(--mono);font-weight:600}
+
+/* KPI cards */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:20px}
+.kpi{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r) var(--r) 0 0}
+.kpi-ok::before{background:var(--green)}.kpi-fail::before{background:var(--red)}.kpi-rate::before{background:var(--accent)}.kpi-pend::before{background:var(--yellow)}.kpi-days::before{background:var(--purple)}
+.kpi-val{font-family:var(--mono);font-size:28px;font-weight:700;line-height:1}
+.kpi-ok .kpi-val{color:var(--green)}.kpi-fail .kpi-val{color:var(--red)}.kpi-rate .kpi-val{color:var(--accent)}.kpi-pend .kpi-val{color:var(--yellow)}.kpi-days .kpi-val{color:var(--purple)}
+.kpi-lbl{font-size:10px;color:var(--text3);margin-top:5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.5px}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* Section header */
+.sec{margin-bottom:20px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.sec-title{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:8px}
+.sec-badge{font-size:9px;padding:2px 7px;border-radius:10px;font-weight:700}
+.sb-red{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.sb-grn{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.sb-acc{background:rgba(59,130,246,.15);color:var(--accent);border:1px solid rgba(59,130,246,.3)}
+
+/* Bar chart */
+.chart-wrap{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:14px;overflow-x:auto}
+.chart-row{display:flex;align-items:center;gap:8px;padding:4px 0;min-width:500px}
+.chart-lbl{font-size:11px;color:var(--text2);width:110px;flex-shrink:0;font-family:var(--mono);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chart-bar-wrap{flex:1;background:var(--panel2);border-radius:4px;height:20px;overflow:hidden;position:relative}
+.chart-bar{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;padding-left:8px;font-size:10px;font-family:var(--mono);font-weight:700;color:#fff;white-space:nowrap;min-width:0}
+.bar-red{background:linear-gradient(90deg,var(--red),#f87171)}
+.bar-grn{background:linear-gradient(90deg,var(--green),#34d399)}
+.bar-org{background:linear-gradient(90deg,var(--orange),#fb923c)}
+.bar-pur{background:linear-gradient(90deg,var(--purple),#a78bfa)}
+.chart-num{font-size:10px;color:var(--text3);font-family:var(--mono);width:60px;text-align:right;flex-shrink:0}
+
+/* Ranking table */
+.rtable{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.rtable-hdr{display:grid;padding:8px 14px;background:var(--panel2);border-bottom:1px solid var(--border);font-size:10px;color:var(--text3);font-family:var(--mono);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.rtable-row{display:grid;padding:8px 14px;border-bottom:1px solid var(--border);align-items:center;transition:background .15s}
+.rtable-row:last-child{border-bottom:none}
+.rtable-row:hover{background:var(--panel2)}
+.rnk{font-family:var(--mono);font-weight:700;font-size:13px}
+.rnk-1{color:var(--red)}.rnk-2{color:var(--orange)}.rnk-3{color:var(--yellow)}
+.rtag{font-size:9px;padding:1px 6px;border-radius:4px;font-family:var(--mono);font-weight:700}
+.rtag-r{background:rgba(239,68,68,.15);color:var(--red)}
+.rtag-y{background:rgba(245,158,11,.1);color:var(--yellow)}
+.rtag-g{background:rgba(16,185,129,.15);color:var(--green)}
+.mini-bar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:3px}
+.mini-bar-f{height:100%;border-radius:3px;background:var(--red)}
+
+/* Fix recommendation */
+.fix-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:8px;border-left:3px solid var(--red)}
+.fix-card.fix-ok{border-left-color:var(--green)}
+.fix-card.fix-warn{border-left-color:var(--orange)}
+.fix-room{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.fix-meta{font-size:11px;color:var(--text3);margin-bottom:8px}
+.fix-issues{display:flex;flex-direction:column;gap:5px}
+.fix-issue-row{display:flex;align-items:flex-start;gap:8px;padding:6px 10px;background:var(--panel2);border-radius:5px}
+.fix-issue-ico{font-size:14px;flex-shrink:0}
+.fix-issue-detail{flex:1}
+.fix-issue-name{font-size:12px;font-weight:600;color:var(--text)}
+.fix-issue-cnt{font-size:10px;color:var(--red);font-family:var(--mono);margin-top:1px}
+.fix-issue-rec{font-size:11px;color:var(--text3);margin-top:3px;padding:4px 8px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.15);border-radius:4px;line-height:1.5}
+.fix-freq{display:flex;align-items:center;gap:6px;margin-top:4px}
+.fix-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* Timeline */
+.timeline-wrap{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:14px;overflow-x:auto}
+.timeline-grid{display:grid;gap:1px;min-width:400px}
+.tl-hdr{display:flex;gap:2px;margin-bottom:6px}
+.tl-date{font-size:9px;color:var(--text3);font-family:var(--mono);flex:1;text-align:center;transform:rotate(-30deg);transform-origin:center;white-space:nowrap}
+.tl-row{display:flex;align-items:center;gap:4px;margin-bottom:3px}
+.tl-lbl{font-size:10px;color:var(--text2);font-family:var(--mono);width:80px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tl-cells{display:flex;gap:2px;flex:1}
+.tl-cell{flex:1;height:18px;border-radius:3px;cursor:default;transition:transform .1s}
+.tl-cell:hover{transform:scale(1.1)}
+.tc-ok{background:var(--green)}.tc-fail{background:var(--red)}.tc-pend{background:var(--border2)}.tc-na{background:var(--panel2);border:1px solid var(--border)}
+
+/* 2-col layout */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+@media(max-width:800px){.grid-2{grid-template-columns:1fr}}
+
+/* MODAL */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:1000;display:none;align-items:center;justify-content:center}
+.ov.open{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border2);border-radius:12px;width:680px;max-width:96vw;max-height:88vh;display:flex;flex-direction:column;box-shadow:var(--sh)}
+.mhdr{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.mtit{font-weight:700;font-size:14px;flex:1}
+.mstag{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:rgba(59,130,246,.15);color:var(--accent);border:1px solid rgba(59,130,246,.3)}
+.mbody{flex:1;overflow-y:auto;padding:14px 20px;display:flex;flex-direction:column;gap:10px}
+.mfields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.flbl{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;font-family:var(--mono)}
+.finp{width:100%;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;color:var(--text);font-family:var(--sans);font-size:12px;outline:none}
+.finp:focus{border-color:var(--accent)}
+.eprev{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;font-size:11px;line-height:1.7;white-space:pre-wrap;font-family:var(--mono);color:var(--text2);max-height:240px;overflow-y:auto}
+.mftr{padding:10px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+
+/* TOAST */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);border:1px solid var(--border2);color:var(--text);padding:9px 18px;border-radius:8px;font-size:12px;font-weight:600;z-index:9999;opacity:0;transition:all .25s;pointer-events:none;box-shadow:var(--sh)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* STICKY BOTTOM */
+.sbot{position:sticky;bottom:0;background:var(--panel);border-top:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;gap:10px;z-index:150;box-shadow:0 -4px 20px rgba(0,0,0,.3)}
+.sbottxt{font-size:12px;color:var(--text2);font-family:var(--mono)}
+.sbright{margin-left:auto;display:flex;gap:8px}
+
+
+/* MANAGE */
+.mg-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.mg-table th{padding:7px 10px;text-align:left;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;background:var(--panel2);border-bottom:2px solid var(--border2);white-space:nowrap}
+.mg-table td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text2)}
+.mg-table tr:hover td{background:var(--panel2)}
+.mg-table .rn{font-family:var(--mono);font-weight:700;color:var(--accent);font-size:13px}
+.mg-table .site-pill{font-size:9px;padding:2px 7px;border-radius:10px;background:rgba(59,130,246,.12);color:var(--accent);border:1px solid rgba(59,130,246,.25);font-family:var(--mono);font-weight:700;white-space:nowrap}
+.mg-table .dev-pill{font-size:9px;padding:2px 6px;border-radius:4px;background:var(--panel2);border:1px solid var(--border2);color:var(--text2);font-family:var(--mono);display:inline-block;white-space:nowrap;line-height:1.4}
+.mg-acts{display:flex;gap:4px}
+.mg-wrap{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;overflow-x:auto}
+.mg-stat{font-size:11px;color:var(--text3);font-family:var(--mono);padding:6px 20px;border-bottom:1px solid var(--border);background:var(--bg2)}
+
+.floor-cb{width:18px;height:18px;border-radius:4px;border:2px solid var(--border2);background:var(--panel);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;font-size:12px;font-weight:700;line-height:1;user-select:none}
+.floor-cb.checked{background:var(--green);border-color:var(--green);color:#fff}
+.floor-hdr-checked{background:rgba(16,185,129,.06)!important}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+@media(max-width:700px){.rg,.mfields,.hrg,.kpi-row{grid-template-columns:1fr}.ss{margin:8px}.hw,.aw{padding:10px}}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <span class="nav-logo">VIB · IT-IS-WBS</span>
+  <div class="nav-sep"></div>
+  <span class="nav-title">Kiểm tra phòng họp hằng ngày</span>
+  <div class="nav-right">
+    <div class="nav-date" id="navDate"></div>
+    <button class="bico" onclick="toggleTheme()" id="thBtn" title="Giao diện">🌙</button>
+    <button class="bico" id="btnNavSave" onclick="openSave()" title="Lưu lịch sử hôm nay">💾</button>
+  </div>
+</nav>
+
+<div class="tab-bar">
+  <button class="tab on" id="t-check"   onclick="sw('check')">📋 Kiểm tra <span class="tbadge" id="tb-fail">0</span></button>
+  <button class="tab"    id="t-history" onclick="sw('history')">🕓 Lịch sử <span class="tbadge" id="tb-hist">0</span></button>
+  <button class="tab"    id="t-report"  onclick="sw('report')">📊 Phân tích &amp; Báo cáo</button>
+  <button class="tab"    id="t-manage"  onclick="sw('manage')">⚙️ Quản lý phòng</button>
+</div>
+
+<!-- CHECK VIEW -->
+<div id="v-check">
+  <div class="sum-bar">
+    <div class="si"><span class="sl">Tổng</span><span class="sv sv-tot" id="sTot">0</span></div>
+    <div class="si"><span class="sl">OK</span><span class="sv sv-ok" id="sOK">0</span></div>
+    <div class="si"><span class="sl">Lỗi</span><span class="sv sv-fail" id="sFail">0</span></div>
+    <div class="si"><span class="sl">Chờ</span><span class="sv sv-pend" id="sPend">0</span></div>
+    <div class="pw"><div class="pt"><div class="pf" id="pFill" style="width:0%"></div></div><span class="ppct" id="pPct">0%</span></div>
+  </div>
+  <div class="fbar">
+    <select class="fsel" id="fCity" onchange="render()"><option value="">🌏 Tất cả</option><option value="Ho Chi Minh">🏙 TP.HCM</option><option value="Ha Noi">🏛 Hà Nội</option></select>
+    <select class="fsel" id="fSite" onchange="render()"><option value="">🏢 Tất cả Site</option></select>
+    <select class="fsel" id="fStatus" onchange="render()"><option value="">📊 Tất cả</option><option value="pending">⏳ Chưa KT</option><option value="ok">✅ OK</option><option value="issue">❌ Có lỗi</option></select>
+    <input class="finput" id="fSearch" placeholder="🔍 Tìm phòng..." oninput="render()">
+    <div class="faction">
+      <button class="btn bg bsm" onclick="expandAll()">↕ Mở/Đóng</button>
+      <button class="btn bd bsm" onclick="resetAll()">↺ Reset</button>
+    </div>
+  </div>
+  <div id="cc" style="padding-bottom:78px"></div>
+</div>
+
+<!-- HISTORY VIEW -->
+<div id="v-history" style="display:none">
+  <div style="padding:10px 20px 0;display:flex;align-items:center;gap:10px">
+    <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">☁️ Dữ liệu dùng chung qua JSONBin</span>
+    <button class="btn bg bsm" onclick="rHist()" style="margin-left:auto">🔄 Tải lại từ JSONBin</button>
+  </div>
+  <div class="hw" id="hc"></div>
+</div>
+
+<!-- REPORT / ANALYTICS VIEW -->
+<div id="v-report" style="display:none">
+  <div class="aw">
+    <!-- Filter -->
+    <div class="aflt">
+      <span class="aflt-lbl">📅 Phạm vi:</span>
+      <select class="fsel" id="rSite" onchange="renderReport()"><option value="">Tất cả Site</option></select>
+      <select class="fsel" id="rDays" onchange="renderReport()">
+        <option value="7">7 ngày gần nhất</option>
+        <option value="14">14 ngày</option>
+        <option value="30" selected>30 ngày</option>
+        <option value="999">Toàn bộ lịch sử</option>
+      </select>
+      <select class="fsel" id="rCity" onchange="renderReport()"><option value="">Tất cả TP</option><option value="Ho Chi Minh">TP.HCM</option><option value="Ha Noi">Hà Nội</option></select>
+      <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+        <button class="btn bg bsm" onclick="renderReport()" title="Cập nhật lại phân tích">🔄 Làm mới</button>
+        <div style="width:1px;height:20px;background:var(--border2)"></div>
+        <button class="btn bor bsm" onclick="exportTxtReport()">📄 Xuất TXT</button>
+        <button class="btn bp bsm" onclick="exportEmailReport()">📧 Email</button>
+        <div style="width:1px;height:20px;background:var(--border2)"></div>
+        <button class="btn bd bsm" onclick="resetAllHistory()" title="Xóa toàn bộ lịch sử đã lưu">🗑 Xóa lịch sử</button>
+      </div>
+    </div>
+    <div id="reportContent"><div class="aempty">📊 Chưa có dữ liệu lịch sử.<br>Vui lòng kiểm tra phòng và nhấn 💾 để lưu ít nhất 1 ngày.</div></div>
+  </div>
+</div>
+
+
+<!-- MANAGE VIEW -->
+<div id="v-manage" style="display:none">
+  <div style="padding:8px 20px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:11px;flex-wrap:wrap">
+    <span style="color:var(--text3);font-family:var(--mono)">☁️ Sync qua JSONBin — vib-rooms</span>
+    <span id="roomSyncStatus" style="color:var(--text3);font-family:var(--mono)"></span>
+    <button class="btn bg bsm" onclick="syncRoomsFromCloud()" style="border-color:var(--accent);color:var(--accent)">🔄 Tải từ JSONBin</button>
+    <button class="btn bg bsm" onclick="pushRoomsToCloud()" style="border-color:var(--green);color:var(--green)">☁️ Đẩy lên JSONBin</button>
+  </div>
+  <div style="padding:10px 20px;background:var(--panel2);border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+    <input class="finput" id="mgSearch" placeholder="🔍 Tìm phòng, site..." oninput="renderManage()" style="width:220px">
+    <select class="fsel" id="mgSite" onchange="renderManage()"><option value="">🏢 Tất cả Site</option></select>
+    <select class="fsel" id="mgCity" onchange="renderManage()"><option value="">🌏 Tất cả TP</option><option value="Ho Chi Minh">🏙 TP.HCM</option><option value="Ha Noi">🏛 Hà Nội</option></select>
+    <div style="margin-left:auto;display:flex;gap:6px">
+      <button class="btn bg bsm" onclick="resetRoomsToDefault()">↺ Khôi phục mặc định</button>
+      <button class="btn bs" onclick="openRoomModal(null)">＋ Thêm phòng mới</button>
+    </div>
+  </div>
+  <div style="padding:12px 20px 80px" id="mgContent"></div>
+</div>
+
+<!-- ROOM EDIT MODAL -->
+<div class="ov" id="rmModal">
+  <div class="modal" style="max-width:620px">
+    <div class="mhdr">
+      <span class="mtit" id="rmModalTitle">➕ Thêm phòng mới</span>
+      <button class="bico" onclick="closeRoomModal()">✕</button>
+    </div>
+    <div class="mbody">
+      <div class="mfields">
+        <div><div class="flbl">Tên phòng *</div><input class="finp" id="rmName" placeholder="VD: S21"></div>
+        <div><div class="flbl">Tầng *</div><input class="finp" id="rmFloor" placeholder="VD: FL 2"></div>
+        <div>
+          <div class="flbl">Thành phố *</div>
+          <select class="finp" id="rmCity">
+            <option value="Ho Chi Minh">TP. Hồ Chí Minh</option>
+            <option value="Ha Noi">Hà Nội</option>
+          </select>
+        </div>
+        <div>
+          <div class="flbl">Site *</div>
+          <div style="display:flex;gap:6px">
+            <select class="finp" id="rmSiteSelect" onchange="syncSiteInput()" style="flex:1"></select>
+            <input class="finp" id="rmSite" placeholder="Hoặc nhập site mới" style="flex:1">
+          </div>
+        </div>
+        <div><div class="flbl">Video Conf / Camera</div><input class="finp" id="rmVc" placeholder="VD: Logitech Rally Bar Mini"></div>
+        <div><div class="flbl">TV / Màn hình</div><input class="finp" id="rmTv" placeholder="VD: Samsung 75&quot;"></div>
+        <div><div class="flbl">Phone (model)</div><input class="finp" id="rmPh" placeholder="VD: B189, Yealink"></div>
+        <div><div class="flbl">Extension</div><input class="finp" id="rmExt" placeholder="VD: 6321"></div>
+        <div><div class="flbl">Barco model</div><input class="finp" id="rmBm" placeholder="VD: CX-10, CX-50"></div>
+        <div><div class="flbl">Số Button Share</div><input class="finp" id="rmBs" type="number" min="0" value="0" placeholder="0"></div>
+        <div><div class="flbl">AppleTV</div><input class="finp" id="rmAtv" placeholder="VD: AppleTV (để trống nếu không có)"></div>
+        <div><div class="flbl">Ghi chú</div><input class="finp" id="rmNote" placeholder="Ghi chú thêm (nếu có)"></div>
+      </div>
+    </div>
+    <div class="mftr">
+      <button class="btn bg" onclick="closeRoomModal()">Hủy</button>
+      <button class="btn bs" onclick="saveRoom()">💾 Lưu phòng</button>
+    </div>
+  </div>
+</div>
+
+<!-- STICKY BOTTOM (check tab only) -->
+<div class="sbot" id="sbot">
+  <div class="sbottxt" id="sbottxt">Đang tải...</div>
+  <div class="sbright">
+    <button class="btn bd" onclick="newSession()" style="border-color:var(--orange);color:var(--orange)">🔄 Phiên mới</button>
+    <button class="btn bg" onclick="markAllVis()">✅ OK tất cả hiển thị</button>
+    <button class="btn bp" onclick="openEmail('ALL')">📧 Báo cáo tổng</button>
+  </div>
+</div>
+
+<!-- Email Modal -->
+<div class="ov" id="emModal">
+  <div class="modal">
+    <div class="mhdr"><span class="mtit">📧 Gửi báo cáo kiểm tra</span><span class="mstag" id="mSiteTag">TẤT CẢ SITE</span><button class="bico" onclick="closeEmail()">✕</button></div>
+    <div class="mbody">
+      <div class="mfields">
+        <div><div class="flbl">Gửi đến (To)</div><input class="finp" id="eTo" type="email" placeholder="manager@vib.com.vn"></div>
+        <div><div class="flbl">CC</div><input class="finp" id="eCc" type="email" placeholder="team@vib.com.vn"></div>
+        <div><div class="flbl">Người kiểm tra</div><input class="finp" id="eFrom" placeholder="Họ tên nhân viên"></div>
+        <div><div class="flbl">Bộ phận</div><input class="finp" id="eTeam" value="IT-IS-WBS"></div>
+      </div>
+      <div><div class="flbl" style="margin-bottom:5px">Nội dung email</div><div class="eprev" id="eprev"></div></div>
+    </div>
+    <div class="mftr" style="flex-direction:column;gap:10px">
+      <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--text2);line-height:1.6">
+        💡 <strong>Cách gửi đơn giản nhất:</strong> Nhấn <strong>📋 Copy</strong> → mở Outlook/Gmail → dán vào email mới <kbd style="background:var(--panel2);border:1px solid var(--border2);border-radius:3px;padding:1px 5px;font-size:10px">Ctrl+V</kbd>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <button class="btn bg" onclick="closeEmail()">Đóng</button>
+        <button class="btn bp" onclick="copyEmail()" style="flex:1;justify-content:center;font-size:13px">📋 Copy nội dung email</button>
+        <div style="width:1px;height:28px;background:var(--border2)"></div>
+        <button class="btn bg bsm" onclick="sendViaGmail()" title="Mở Gmail trên trình duyệt (cần truy cập Google)">Gmail ↗</button>
+        <button class="btn bg bsm" onclick="sendViaOutlookWeb()" title="Mở Outlook Web (cần truy cập office.com)">Outlook Web ↗</button>
+        <button class="btn bg bsm" onclick="sendViaMailto()" title="Mở app mail mặc định trên máy (Mac/Windows)">App Mail</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Save Modal -->
+<div class="ov" id="saveModal">
+  <div class="modal" style="max-width:420px">
+    <div class="mhdr"><span class="mtit">💾 Lưu báo cáo hôm nay</span><button class="bico" onclick="closeSave()">✕</button></div>
+    <div class="mbody">
+      <p style="font-size:12px;color:var(--text2);line-height:1.7">Lưu kết quả kiểm tra <strong id="saveDate"></strong> vào lịch sử.</p>
+      <div style="margin-top:8px"><div class="flbl" style="margin-bottom:4px">Người kiểm tra</div><input class="finp" id="saveName" placeholder="Họ tên nhân viên"></div>
+      <div id="syncStatus" style="display:none;margin-top:10px;padding:8px 12px;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px"></div>
+    </div>
+    <div class="mftr">
+      <button class="btn bg" onclick="closeSave()">Hủy</button>
+      <button class="btn bs" id="btnSave" onclick="doSave()">💾 Lưu & Đồng bộ</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  ROOMS DATA
+// ══════════════════════════════════════════════
+const ROOMS=[
+  {id:1,n:'S21',city:'Ho Chi Minh',site:'Sailing',floor:'FL 2',vc:'Logitech Rally Plus',bm:'CX-50',bs:4,atv:'AppleTV',ph:'B189',ext:'6321',tv:'Samsung 100"'},
+  {id:2,n:'S22',city:'Ho Chi Minh',site:'Sailing',floor:'FL 2',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:1,atv:'AppleTV',ph:'B189',ext:'6322',tv:'Samsung 65"'},
+  {id:3,n:'S23',city:'Ho Chi Minh',site:'Sailing',floor:'FL 2',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:1,atv:'AppleTV',ph:'B189',ext:'6323',tv:'Samsung 65"'},
+  {id:4,n:'S24',city:'Ho Chi Minh',site:'Sailing',floor:'FL 2',vc:'',bm:'CX-10',bs:1,atv:'',ph:'',ext:'',tv:'Samsung 65"'},
+  {id:5,n:'S25',city:'Ho Chi Minh',site:'Sailing',floor:'FL 2',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'AppleTV',ph:'B189',ext:'6325',tv:'Samsung 75"'},
+  {id:6,n:'S51',city:'Ho Chi Minh',site:'Sailing',floor:'FL 5',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:1,atv:'AppleTV',ph:'B189',ext:'6351',tv:'Samsung 85"'},
+  {id:7,n:'S52',city:'Ho Chi Minh',site:'Sailing',floor:'FL 5',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'AppleTV',ph:'B189',ext:'6352',tv:'Samsung 75"'},
+  {id:8,n:'S53',city:'Ho Chi Minh',site:'Sailing',floor:'FL 5',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'AppleTV',ph:'B189',ext:'6353',tv:'Samsung 65"'},
+  {id:9,n:'S54',city:'Ho Chi Minh',site:'Sailing',floor:'FL 5',vc:'',bm:'CX-10',bs:1,atv:'',ph:'Yealink',ext:'85002',tv:'Samsung 65"'},
+  {id:10,n:'S61',city:'Ho Chi Minh',site:'Sailing',floor:'FL 6',vc:'Logitech Rally Plus',bm:'CX-50',bs:2,atv:'AppleTV',ph:'B189',ext:'6361',tv:'Samsung 100"'},
+  {id:11,n:'S62',city:'Ho Chi Minh',site:'Sailing',floor:'FL 6',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'AppleTV',ph:'B189',ext:'6362',tv:'Samsung 85"'},
+  {id:12,n:'S63',city:'Ho Chi Minh',site:'Sailing',floor:'FL 6',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'AppleTV',ph:'B189',ext:'6363',tv:'Samsung 85"'},
+  {id:13,n:'S64',city:'Ho Chi Minh',site:'Sailing',floor:'FL 6',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'AppleTV',ph:'B189',ext:'6364',tv:'Samsung 65"'},
+  {id:14,n:'S71',city:'Ho Chi Minh',site:'Sailing',floor:'FL 7',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'AppleTV',ph:'B189',ext:'6371',tv:'Samsung 75"'},
+  {id:15,n:'S72',city:'Ho Chi Minh',site:'Sailing',floor:'FL 7',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'AppleTV',ph:'B189',ext:'6372',tv:'Samsung 85"'},
+  {id:16,n:'S151',city:'Ho Chi Minh',site:'Sailing',floor:'FL 15',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'',ph:'B189',ext:'6101',tv:'Samsung 75"'},
+  {id:17,n:'S152',city:'Ho Chi Minh',site:'Sailing',floor:'FL 15',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'',ph:'B189',ext:'6102',tv:'Samsung 75"'},
+  {id:18,n:'PS31',city:'Ho Chi Minh',site:'Paxsky',floor:'FL 3',vc:'',bm:'',bs:0,atv:'',ph:'',ext:'',tv:'Samsung 75"'},
+  {id:19,n:'PS32',city:'Ho Chi Minh',site:'Paxsky',floor:'FL 3',vc:'',bm:'',bs:0,atv:'',ph:'B189',ext:'7198',tv:'Samsung 75"'},
+  {id:20,n:'PS33',city:'Ho Chi Minh',site:'Paxsky',floor:'FL 3',vc:'',bm:'',bs:0,atv:'',ph:'',ext:'',tv:'Samsung 75"'},
+  {id:21,n:'PS41',city:'Ho Chi Minh',site:'Paxsky',floor:'FL 4',vc:'Yealink A40',bm:'',bs:1,atv:'',ph:'Yealink',ext:'7181',tv:'Samsung 75"'},
+  {id:22,n:'PS42',city:'Ho Chi Minh',site:'Paxsky',floor:'FL 4',vc:'',bm:'',bs:0,atv:'',ph:'B189',ext:'',tv:'Samsung 75"'},
+  {id:23,n:'PS43',city:'Ho Chi Minh',site:'Paxsky',floor:'FL 4',vc:'',bm:'',bs:0,atv:'',ph:'B189',ext:'7182',tv:'Samsung 75"'},
+  {id:24,n:'PS44',city:'Ho Chi Minh',site:'Paxsky',floor:'FL 4',vc:'',bm:'',bs:0,atv:'',ph:'B189',ext:'7183',tv:'Samsung 75"'},
+  {id:25,n:'V221',city:'Ho Chi Minh',site:'Viettel',floor:'FL 22',vc:'Yealink A40',bm:'',bs:1,atv:'',ph:'Yealink',ext:'',tv:'Samsung 75"'},
+  {id:26,n:'ML31',city:'Ho Chi Minh',site:'Melinh',floor:'FL 3',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'',ph:'B189',ext:'6331',tv:'Samsung 75"'},
+  {id:27,n:'ML32',city:'Ho Chi Minh',site:'Melinh',floor:'FL 3',vc:'Polycom',bm:'',bs:0,atv:'',ph:'B189',ext:'6332',tv:'Samsung 75"'},
+  {id:28,n:'ML33',city:'Ho Chi Minh',site:'Melinh',floor:'FL 3',vc:'Polycom',bm:'',bs:0,atv:'',ph:'1608-I',ext:'6333',tv:'Samsung 75"'},
+  {id:29,n:'N11',city:'Ho Chi Minh',site:'176 NTMK',floor:'FL 1',vc:'',bm:'',bs:0,atv:'',ph:'B189',ext:'6211',tv:'Samsung 75"'},
+  {id:30,n:'N21',city:'Ho Chi Minh',site:'176 NTMK',floor:'FL 2',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:1,atv:'',ph:'B189',ext:'6221',tv:'Samsung 75"'},
+  {id:31,n:'N31',city:'Ho Chi Minh',site:'176 NTMK',floor:'FL 3',vc:'',bm:'',bs:0,atv:'',ph:'B189',ext:'6231',tv:'Samsung 75"'},
+  {id:32,n:'D31',city:'Ho Chi Minh',site:'DATC',floor:'FL 3',vc:'Yealink A40',bm:'',bs:1,atv:'',ph:'B189',ext:'7131',tv:'Samsung 75"'},
+  {id:33,n:'D41',city:'Ho Chi Minh',site:'DATC',floor:'FL 4',vc:'Yealink A40',bm:'',bs:1,atv:'',ph:'B189',ext:'7141',tv:'Samsung 75"'},
+  {id:34,n:'D51',city:'Ho Chi Minh',site:'DATC',floor:'FL 5',vc:'Yealink A40',bm:'',bs:1,atv:'',ph:'B189',ext:'7151',tv:'Samsung 75"'},
+  {id:35,n:'Đào tạo HR',city:'Ho Chi Minh',site:'DATC',floor:'FL 6',vc:'Logitech Rally Plus',bm:'CX-50',bs:2,atv:'',ph:'',ext:'',tv:'Màn chiếu 200"'},
+  {id:36,n:'StudioRoom',city:'Ho Chi Minh',site:'DATC',floor:'FL 6',vc:'Logitech Rally Bar Mini',bm:'',bs:0,atv:'',ph:'B189',ext:'7151',tv:'Samsung 75"'},
+  {id:37,n:'Đào tạo HR',city:'Ho Chi Minh',site:'Thanh Do',floor:'FL 1',vc:'Logitech Rally Plus',bm:'CX-50',bs:2,atv:'',ph:'',ext:'',tv:'Màn chiếu 200"'},
+  {id:38,n:'H11',city:'Ha Noi',site:'CornerStone',floor:'FL 1',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'AppleTV',ph:'Yealink',ext:'55001',tv:'Samsung 75"'},
+  {id:39,n:'H12',city:'Ha Noi',site:'CornerStone',floor:'FL 1',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'AppleTV',ph:'Yealink',ext:'55002',tv:'Samsung 75"'},
+  {id:40,n:'H13 (SGD)',city:'Ha Noi',site:'CornerStone',floor:'FL 1',vc:'',bm:'',bs:0,atv:'',ph:'B189',ext:'',tv:'Samsung 75"'},
+  {id:41,n:'H61',city:'Ha Noi',site:'CornerStone',floor:'FL 6',vc:'Cisco Room Bar',bm:'CX-10',bs:2,atv:'AppleTV',ph:'B189',ext:'5708',tv:'Samsung 75"'},
+  {id:42,n:'H62',city:'Ha Noi',site:'CornerStone',floor:'FL 6',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'AppleTV',ph:'B189',ext:'5709',tv:'Samsung 75"'},
+  {id:43,n:'H63',city:'Ha Noi',site:'CornerStone',floor:'FL 6',vc:'Cisco Room Bar',bm:'CX-10',bs:2,atv:'AppleTV',ph:'B189',ext:'5712',tv:'Samsung 75"'},
+  {id:44,n:'H71',city:'Ha Noi',site:'CornerStone',floor:'FL 7',vc:'Logitech Rally Plus',bm:'CX-50',bs:3,atv:'AppleTV',ph:'B189',ext:'5701',tv:'Samsung 85"'},
+  {id:45,n:'H72',city:'Ha Noi',site:'CornerStone',floor:'FL 7',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'AppleTV',ph:'B189',ext:'5702',tv:'Samsung 75"'},
+  {id:46,n:'H73',city:'Ha Noi',site:'CornerStone',floor:'FL 7',vc:'Logitech Rally Bar Mini',bm:'CX-10',bs:2,atv:'AppleTV',ph:'B189',ext:'5703',tv:'Samsung 75"'},
+  {id:47,n:'H74',city:'Ha Noi',site:'CornerStone',floor:'FL 7',vc:'Cisco Room Bar',bm:'CX-10',bs:2,atv:'',ph:'B189',ext:'5704',tv:'Samsung 75"'},
+  {id:48,n:'H75',city:'Ha Noi',site:'CornerStone',floor:'FL 7',vc:'Polycom',bm:'CX-10',bs:1,atv:'',ph:'B189',ext:'5705',tv:'Samsung 75"'},
+  {id:49,n:'H76',city:'Ha Noi',site:'CornerStone',floor:'FL 7',vc:'Polycom',bm:'CX-10',bs:0,atv:'',ph:'B189',ext:'',tv:'Samsung 75"'},
+  {id:50,n:'H77',city:'Ha Noi',site:'CornerStone',floor:'FL 7',vc:'Polycom',bm:'CX-10',bs:0,atv:'',ph:'B189',ext:'5719',tv:'Samsung 75"'},
+  {id:51,n:'HHM1',city:'Ha Noi',site:'Hong Ha',floor:'FL 7',vc:'Polycom',bm:'',bs:0,atv:'',ph:'Yealink',ext:'5721',tv:'Samsung 75"'},
+  {id:52,n:'HHM2',city:'Ha Noi',site:'Hong Ha',floor:'FL 7',vc:'Polycom',bm:'',bs:0,atv:'',ph:'Yealink',ext:'5723',tv:'Samsung 75"'},
+  {id:53,n:'HH101',city:'Ha Noi',site:'Hong Ha',floor:'FL 10',vc:'Polycom',bm:'',bs:0,atv:'',ph:'B189',ext:'6185',tv:'Samsung 75"'},
+  {id:54,n:'CN041',city:'Ha Noi',site:'Conico',floor:'FL 4',vc:'Polycom',bm:'',bs:0,atv:'',ph:'B189',ext:'4946',tv:'Samsung 75"'},
+  {id:55,n:'CN1201',city:'Ha Noi',site:'Conico',floor:'FL 12',vc:'Polycom',bm:'',bs:0,atv:'',ph:'B189',ext:'5707',tv:'Samsung 75"'}
+];
+
+const CI=[
+  {k:'vc',l:'📹 Video Conf / Camera',fix:'Kiểm tra kết nối USB/HDMI. Restart thiết bị, cập nhật firmware Logitech/Cisco/Yealink. Kiểm tra kết nối mạng LAN.'},
+  {k:'au',l:'🔊 Âm thanh / Micro',fix:'Kiểm tra cài đặt audio trong Zoom/Teams. Kiểm tra micro không bị mute vật lý. Thay cáp USB nếu cần. Kiểm tra Logitech Sync app.'},
+  {k:'tv',l:'📺 TV / Màn hình',fix:'Kiểm tra nguồn điện, cáp HDMI, cài đặt input. Khởi động lại TV. Kiểm tra remote control còn pin.'},
+  {k:'ph',l:'📞 Phone / Ext',fix:'Khởi động lại IP Phone. Kiểm tra kết nối PoE switch. Liên hệ team Telecom kiểm tra SIP trunk/extension.'},
+  {k:'ba',l:'🔲 Barco / Button Share',fix:'Kiểm tra Barco ClickShare đã kết nối WiFi đúng. Reset Button USB. Cập nhật firmware Barco. Kiểm tra laptop driver.'},
+  {k:'ap',l:'🍎 AppleTV',fix:'Kiểm tra AppleTV đã bật và kết nối WiFi. Khởi động lại AppleTV. Kiểm tra HDMI switch input. Đảm bảo cùng network với iPhone/Mac.'},
+  {k:'rm',l:'🧹 Phòng / Bàn ghế',fix:'Liên hệ bộ phận vệ sinh/tạp vụ. Kiểm tra bàn ghế hỏng báo sửa chữa. Đảm bảo điều hòa hoạt động.'},
+];
+
+function ap(r,k){
+  if(k==='vc'||k==='au') return !!r.vc;
+  if(k==='tv') return !!r.tv;
+  if(k==='ph') return !!r.ph;
+  if(k==='ba') return !!(r.bm||r.bs>0);
+  if(k==='ap') return !!r.atv;
+  return true;
+}
+
+// ── STATE ──
+const TODAY=new Date().toISOString().slice(0,10);
+const KT='vib3_'+TODAY, KH='vib3_hist';
+// ── JSONBin config ──
+// ── Supabase config ──
+const SB_URL='https://ekdssjlfayjawbfjyhlj.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrZHNzamxmYXlqYXdiZmp5aGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MDE4NzMsImV4cCI6MjA5MTM3Nzg3M30.Eqd-6wNow_t1JVSmY3QLNPccZ_dSMwMP5KzbilF9-qQ';
+const SB_HEADERS={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+const SB_TABLE=SB_URL+'/rest/v1/checklist_data';
+// Bin trạng thái kiểm tra hôm nay (dùng chung cùng Bin checklist, key theo ngày)
+let CK={},NT={},EX=new Set(),curSite='ALL',curFloor=null;
+// Tick tầng: key = "site||floor", value = true
+let FLOOR_CHECKED={};
+function saveFC(){localStorage.setItem('vib3_fc',JSON.stringify(FLOOR_CHECKED));}
+function loadFC(){try{FLOOR_CHECKED=JSON.parse(localStorage.getItem('vib3_fc')||'{}');}catch(e){FLOOR_CHECKED={};}}
+function fcKey(site,floor){return (site+'__'+floor).replace(/[^a-zA-Z0-9_\-]/g,'_');}
+// Map lưu phòng nào đã được lưu lên cloud hôm nay: {rid: true}
+// Reset mỗi ngày bằng cách lưu kèm date
+
+
+
+// ── Checklist hôm nay (local) ──
+function save(){localStorage.setItem(KT,JSON.stringify({CK,NT}));}
+function load(){try{const d=JSON.parse(localStorage.getItem(KT)||'{}');CK=d.CK||{};NT=d.NT||{};}catch(e){}}
+
+// ── Lưu trạng thái 1 phòng lên JSONBin ──
+// Bin riêng cho trạng thái hôm nay: dùng Bin lịch sử, lưu sub-key
+// Thực tế: lưu vào localStorage key JTODAY + sync lên JSONBin dạng {today:{rid:{...}}}
+
+
+
+
+// Load trạng thái đã lưu hôm nay từ JSONBin
+
+
+
+
+// ── History: đọc/ghi JSONBin (shared) + localStorage (cache) ──
+// ── Write lock tránh race condition ──
+// ── Supabase helpers ──
+let _sbWriting=false;
+
+async function _sbGet(){
+  const r=await fetch(SB_TABLE+'?id=eq.main&select=data',{headers:SB_HEADERS});
+  if(!r.ok) throw new Error('SB GET '+r.status);
+  const rows=await r.json();
+  if(!rows.length) throw new Error('No data row');
+  const arr=rows[0].data.entries||[];
+  localStorage.setItem(KH,JSON.stringify(arr));
+  return arr;
+}
+
+async function _sbPut(arr){
+  const r=await fetch(SB_TABLE+'?id=eq.main',{
+    method:'PATCH',
+    headers:{...SB_HEADERS,'Prefer':'return=minimal'},
+    body:JSON.stringify({data:{entries:arr},updated_at:new Date().toISOString()})
+  });
+  if(!r.ok){const t=await r.text().catch(()=>'');throw new Error('SB PUT '+r.status+': '+t);}
+  localStorage.setItem(KH,JSON.stringify(arr));
+  return arr;
+}
+
+// Ghi an toàn: GET → merge → PATCH, retry với backoff
+async function _safeWrite(mergeFn, maxRetry=4){
+  for(let i=0;i<maxRetry;i++){
+    try{
+      _sbWriting=true;
+      const current=await _sbGet();
+      const merged=mergeFn(current);
+      await _sbPut(merged);
+      _sbWriting=false;
+      return merged;
+    }catch(e){
+      _sbWriting=false;
+      if(i===maxRetry-1) throw e;
+      await new Promise(res=>setTimeout(res,800*(i+1)+Math.random()*800));
+    }
+  }
+}
+
+async function lHist(){
+  try{ return await _sbGet(); }
+  catch(e){ console.warn('lHist fallback local:',e.message); return lHistLocal(); }
+}
+async function sHist(arr){ return _safeWrite(()=>arr); }
+function lHistLocal(){try{return JSON.parse(localStorage.getItem(KH)||'[]');}catch(e){return[];}}
+
+// Lấy CK tổng hợp: merge CK local + rooms đã sync từ tất cả máy (daily entry JSONBin)
+async function getMergedCK(){
+  try{
+    const hist=await _fetchJBin();
+    const dateStr=new Date().toISOString().slice(0,10);
+    const daily=hist.find(h=>h._type==='daily'&&h.date===dateStr);
+    if(!daily||!daily.rooms) return CK;
+    // Merge: cloud rooms ghi đè local nếu phòng đó chưa có trong CK local
+    const merged={...CK};
+    Object.entries(daily.rooms).forEach(([rid,entry])=>{
+      if(entry.checks){
+        if(!merged[rid]){
+          // Phòng này do máy khác check — lấy từ cloud
+          merged[rid]=entry.checks;
+        } else {
+          // Merge từng thiết bị: cloud ghi đè nếu local chưa có
+          merged[rid]={...entry.checks,...merged[rid]};
+        }
+      }
+    });
+    return merged;
+  }catch(e){
+    console.warn('getMergedCK fallback local:',e.message);
+    return CK;
+  }
+}
+
+// Tính res() với CK tổng hợp từ cloud
+function resWithCK(r, ck){
+  const ci2=CI.filter(ci=>ap(r,ci.k));
+  const c2=ck[String(r.id)]||ck[r.id]||{};
+  if(ci2.some(ci=>c2[ci.k]==='fail')) return 'issue';
+  if(ci2.every(ci=>c2[ci.k]==='ok'||c2[ci.k]==='na')) return 'ok';
+  return 'pending';
+}
+
+
+
+
+
+
+function res(r){
+  const c=CK[String(r.id)]||CK[r.id]||{};
+  const a=CI.filter(ci=>ap(r,ci.k));
+  if(a.some(ci=>c[ci.k]==='fail'))return 'issue';
+  if(a.every(ci=>c[ci.k]==='ok'||c[ci.k]==='na'))return 'ok';
+  return 'pending';
+}
+function setC(rid,k,v){
+  rid=String(rid);
+  if(!CK[rid])CK[rid]={};CK[rid][k]=v;save();refCard(rid);updSum();
+  if(v==='fail'){const nb=document.getElementById('nb-'+rid+'-'+k);if(nb)nb.classList.add('show');}
+  const r=getRooms().find(x=>String(x.id)===String(rid));
+  if(r&&r.floor&&r.site){_refreshFloorBtn(r.site,r.floor);_updateSiteBtn(r.site);}
+}
+function setN(rid,k,v){if(!NT[rid])NT[rid]={};NT[rid][k]=v;save();}
+function roomOK(rid){
+  rid=String(rid);
+  const r=getRooms().find(x=>String(x.id)===rid);if(!r)return;
+  if(!CK[rid])CK[rid]={};
+  CI.filter(ci=>ap(r,ci.k)).forEach(ci=>{CK[rid][ci.k]='ok';});
+  save();EX.add(rid);refCard(rid);updSum();
+  }
+function filtered(){
+  const city=document.getElementById('fCity').value;
+  const site=document.getElementById('fSite').value;
+  const st=document.getElementById('fStatus').value;
+  const q=document.getElementById('fSearch').value.toLowerCase().trim();
+  return getRooms().filter(r=>{
+    if(city&&r.city!==city)return false;
+    if(site&&r.site!==site)return false;
+    if(q&&!r.n.toLowerCase().includes(q)&&!r.site.toLowerCase().includes(q))return false;
+    if(st&&res(r)!==st)return false;
+    return true;
+  });
+}
+function render(){
+  const fl=filtered();const el=document.getElementById('cc');
+  if(!fl.length){el.innerHTML='<div style="text-align:center;padding:60px;color:var(--text3)">🔍 Không có phòng phù hợp</div>';updSum();return;}
+  // Nhóm theo site → tầng
+  const bySite={};
+  fl.forEach(r=>{
+    if(!bySite[r.site])bySite[r.site]=[];
+    bySite[r.site].push(r);
+  });
+
+  el.innerHTML=Object.entries(bySite).map(([site,rs])=>{
+    const okN=rs.filter(r=>res(r)==='ok').length;
+    const failN=rs.filter(r=>res(r)==='issue').length;
+    const done=okN+failN;
+    const pct=rs.length>0?Math.round(done/rs.length*100):0;
+    const warn=failN>0?`<span class="swarn">⚠ ${failN} lỗi</span>`:'';
+
+    // Nhóm phòng theo tầng, sắp xếp tầng tăng dần
+    const byFloor={};
+    rs.forEach(r=>{
+      const fl=r.floor||'Khác';
+      if(!byFloor[fl])byFloor[fl]=[];
+      byFloor[fl].push(r);
+    });
+    const floorsSorted=Object.keys(byFloor).sort((a,b)=>{
+      const na=parseInt(a.replace(/\D/g,''))||0;
+      const nb=parseInt(b.replace(/\D/g,''))||0;
+      return na-nb;
+    });
+
+    const floorHTML=floorsSorted.map(function(floor){
+      const frs=byFloor[floor];
+      const fokN=frs.filter(r=>res(r)==='ok').length;
+      const ffailN=frs.filter(r=>res(r)==='issue').length;
+      const fAllDone=frs.every(r=>res(r)!=='pending');
+      // fkey dùng biến JS thật — site và floor đều là biến trong scope
+      const fkey=fcKey(site,floor);
+      const fChecked=!!FLOOR_CHECKED[fkey];
+      const fstat=ffailN>0
+        ?'<span style="color:var(--red);font-size:10px">⚠ '+ffailN+' lỗi</span>'
+        :fokN===frs.length
+          ?'<span style="color:var(--green);font-size:10px">✓ OK</span>'
+          :'<span style="color:var(--text3);font-size:10px">⏳ '+(frs.length-fokN-ffailN)+' chờ</span>';
+      const btnStyle='padding:3px 14px;border-radius:5px;font-size:11px;font-weight:700;font-family:var(--sans);transition:all .2s;border:1.5px solid '
+        +(fChecked?'var(--green);background:var(--green);color:#fff;cursor:default;opacity:1'
+          :fAllDone?'var(--green);background:rgba(16,185,129,.1);color:var(--green);cursor:pointer;opacity:1'
+          :'var(--border2);background:var(--panel2);color:var(--text3);cursor:default;opacity:0.4');
+      const btnOnclick=fAllDone&&!fChecked?'toggleFloor('+JSON.stringify(site)+','+JSON.stringify(floor)+')':'';
+      const btnTxt=fChecked?'✅ Đã lưu':'OK';
+      const hdrBg=fChecked?'background:rgba(16,185,129,.08)':'background:var(--bg2)';
+      return '<div style="margin-bottom:4px">'
+        +'<div id="fhdr-'+fkey+'" style="display:flex;align-items:center;gap:8px;padding:6px 14px;'+hdrBg+';border-top:1px solid var(--border);border-bottom:1px solid var(--border)">'
+        +'<span style="font-family:var(--mono);font-size:10px;font-weight:700;color:'+(fChecked?'var(--green)':'var(--text3)')+';text-transform:uppercase;letter-spacing:1px">'+floor+'</span>'
+        +'<span style="font-size:10px;color:var(--text3)">'+frs.length+' phòng</span>'
+        +fstat
+        +'<div style="margin-left:auto;display:flex;gap:5px;align-items:center">'
+        +'<button id="fcb-'+fkey+'" onclick="'+btnOnclick+'" style="'+btnStyle+'" title="'+(fChecked?'Đã lưu':fAllDone?'Bấm để lưu tầng này':'Hoàn thành kiểm tra tất cả phòng trước')+'">'+btnTxt+'</button>'
+        +'<button class="btn bg bsm" style="padding:2px 8px;font-size:10px" onclick="openEmail('+JSON.stringify(site)+','+JSON.stringify(floor)+')">📧</button>'
+        +'</div>'
+        +'</div>'
+        +'<div class="rg">'+frs.map(r=>buildCard(r)).join('')+'</div>'
+        +'</div>';
+    }).join('');
+
+    return `<div class="ss">
+      <div class="sh">
+        <span class="stag">${site}</span>
+        <div><div class="sname">${site}</div><div class="smeta">${rs[0].city==='Ha Noi'?'🏛 Hà Nội':'🏙 TP.HCM'} · ${rs.length} phòng · ${floorsSorted.length} tầng</div></div>
+        <div class="sstats"><div class="spbar"><div class="spfill" style="width:${pct}%"></div></div>
+          <span style="color:var(--green)">${okN}✓</span>${failN?`<span style="color:var(--red)">${failN}✗</span>`:''}
+          <span style="color:var(--text3)">${rs.length-done}⏳</span>${warn}</div>
+        <div class="sha">
+          <button class="btn bg bsm" id="sokbtn-${site}" onclick="markSite('${site}')">✅ OK Site</button>
+          <button class="btn bp bsm" onclick="openEmail('${site}')">📧 Báo cáo Site</button>
+        </div>
+      </div>
+      ${floorHTML}
+    </div>`;
+  }).join('');
+  updSum();
+}
+
+function markSite(site){
+  if(!confirm(`OK tất cả phòng site "${site}"?`))return;
+  getRooms().filter(r=>r.site===site).forEach(r=>{
+    if(!CK[r.id])CK[r.id]={};
+    CI.filter(ci=>ap(r,ci.k)).forEach(ci=>{if(!CK[r.id][ci.k])CK[r.id][ci.k]='ok';});
+  });
+  save();render();toast('✅ '+site+' — Đã OK!');
+}
+function buildCard(r){
+  const rv=res(r);const ico=rv==='ok'?'✅':rv==='issue'?'❌':'⏳';
+  const a=CI.filter(ci=>ap(r,ci.k));
+  const allOK=a.length>0&&a.every(ci=>(CK[r.id]||{})[ci.k]==='ok');
+  const isOpen=EX.has(r.id);
+  const pills=[];
+  if(r.vc)pills.push(r.vc.split(' ').slice(0,2).join(' '));
+  if(r.bm)pills.push('Barco '+r.bm);if(r.atv)pills.push('AppleTV');
+  if(r.ph)pills.push(r.ph+(r.ext?' '+r.ext:''));
+  const rows=a.map(ci=>{
+    const st=(CK[r.id]||{})[ci.k]||null;const nv=(NT[r.id]||{})[ci.k]||'';
+    return `<div class="cr"><span class="clbl">${ci.l}</span><div class="cg">
+      <button class="chk cok${st==='ok'?' on':''}" onclick="setC(${r.id},'${ci.k}','ok')">✓</button>
+      <button class="chk cfl${st==='fail'?' on':''}" onclick="setC(${r.id},'${ci.k}','fail')">✗</button>
+      <button class="chk cna${st==='na'?' on':''}" onclick="setC(${r.id},'${ci.k}','na')">N/A</button>
+    </div></div>
+    <textarea class="ibox${st==='fail'?' show':''}" id="nb-${r.id}-${ci.k}" rows="2" placeholder="Mô tả vấn đề..." onchange="setN(${r.id},'${ci.k}',this.value)">${nv}</textarea>`;
+  }).join('');
+  return `<div class="rc ${rv}" id="rc-${r.id}">
+    <div class="rh" onclick="toggle(${r.id})">
+      <div style="flex:1"><div><span class="rname">${r.n}</span><span class="rfl">${r.floor}</span></div>
+        <div class="dpills">${pills.map(p=>`<span class="pill">${p}</span>`).join('')}</div></div>
+      <div class="rst"><span style="font-size:16px">${ico}</span><span class="rtog">${isOpen?'▲':'▼'}</span></div>
+    </div>
+    <div class="rb${isOpen?' open':''}" id="rb-${r.id}">
+      <div class="sabar"><span class="salbl">Đánh dấu nhanh</span>
+        <button class="bok" id="bok-${r.id}" onclick="roomOK(${r.id})" ${allOK?'disabled':''}>${allOK?'✅ Đã OK tất cả':'✅ Chọn tất cả OK'}</button>
+      </div>
+      ${rows}</div></div>`;
+}
+function toggle(id){
+  if(EX.has(id))EX.delete(id);else EX.add(id);
+  const b=document.getElementById('rb-'+id);if(b)b.classList.toggle('open',EX.has(id));
+  const t=document.querySelector('#rc-'+id+' .rtog');if(t)t.textContent=EX.has(id)?'▲':'▼';
+}
+function refCard(rid){
+  const r=getRooms().find(x=>String(x.id)===String(rid));if(!r)return;
+  const rv=res(r);const card=document.getElementById('rc-'+rid);if(card)card.className='rc '+rv;
+  const body=document.getElementById('rb-'+rid);if(!body)return;
+  const isOpen=body.classList.contains('open');
+  const a=CI.filter(ci=>ap(r,ci.k));
+  const allOK=a.length>0&&a.every(ci=>(CK[rid]||{})[ci.k]==='ok');
+  const ico=rv==='ok'?'✅':rv==='issue'?'❌':'⏳';
+  const rst=card.querySelector('.rst');if(rst)rst.innerHTML=`<span style="font-size:16px">${ico}</span><span class="rtog">${isOpen?'▲':'▼'}</span>`;
+  const rows=a.map(ci=>{
+    const st=(CK[rid]||{})[ci.k]||null;const nv=(NT[rid]||{})[ci.k]||'';
+    return `<div class="cr"><span class="clbl">${ci.l}</span><div class="cg">
+      <button class="chk cok${st==='ok'?' on':''}" onclick="setC(${rid},'${ci.k}','ok')">✓</button>
+      <button class="chk cfl${st==='fail'?' on':''}" onclick="setC(${rid},'${ci.k}','fail')">✗</button>
+      <button class="chk cna${st==='na'?' on':''}" onclick="setC(${rid},'${ci.k}','na')">N/A</button>
+    </div></div>
+    <textarea class="ibox${st==='fail'?' show':''}" id="nb-${rid}-${ci.k}" rows="2" placeholder="Mô tả vấn đề..." onchange="setN(${rid},'${ci.k}',this.value)">${nv}</textarea>`;
+  }).join('');
+  const newBar=`<div class="sabar"><span class="salbl">Đánh dấu nhanh</span><button class="bok" id="bok-${rid}" onclick="roomOK(${rid})" ${allOK?'disabled':''}>${allOK?'✅ Đã OK tất cả':'✅ Chọn tất cả OK'}</button></div>`;
+  body.innerHTML=newBar+rows;
+  const nb=document.getElementById('bok-'+rid);if(nb){nb.disabled=allOK;nb.textContent=allOK?'✅ Đã OK tất cả':'✅ Chọn tất cả OK';}
+  // Cập nhật nút OK tầng nếu tầng đã đủ điều kiện
+  if(r&&r.floor&&r.site){_refreshFloorBtn(r.site,r.floor);_updateSiteBtn(r.site);}
+}
+function resetAll(){if(!confirm('Reset toàn bộ hôm nay?'))return;CK={};NT={};EX.clear();save();render();toast('↺ Đã reset');}
+
+async function newSession(){
+  if(!confirm('Bắt đầu phiên kiểm tra mới?\n\n• Xóa toàn bộ trạng thái tick phòng hôm nay\n• Xóa trạng thái OK tầng trên JSONBin\n• Dữ liệu lịch sử các ngày trước KHÔNG bị xóa'))return;
+
+  // 1. Reset local state
+  CK={};NT={};EX.clear();save();
+  FLOOR_CHECKED={};saveFC();
+
+  // 2. Xóa daily entry + thêm reset flag trên JSONBin → máy khác poll thấy và reset
+  const ss=document.getElementById('sbottxt');
+  if(ss) ss.textContent='⏳ Đang reset JSONBin...';
+  try{
+    const resetTs=Date.now();
+    await _safeWrite(current=>{
+      const dateStr=new Date().toISOString().slice(0,10);
+      // Xóa daily entry hôm nay + reset flag cũ
+      const filtered=current.filter(h=>!(h._type==='daily'&&h.date===dateStr)&&!(h._type==='reset'&&h.date===dateStr));
+      // Thêm reset flag mới
+      filtered.unshift({_type:'reset',date:dateStr,ts:resetTs});
+      return filtered;
+    });
+  }catch(e){console.warn('newSession reset cloud:',e.message);}
+
+  // 3. Re-render
+  render();
+  toast('🔄 Đã bắt đầu phiên kiểm tra mới!');
+}
+
+async function toggleFloor(site,floor){
+  const key=fcKey(site,floor);
+  if(FLOOR_CHECKED[key]) return; // đã lưu rồi
+  FLOOR_CHECKED[key]=true;
+  saveFC();
+
+  // Cập nhật UI nút OK tầng → loading
+  const btn=document.getElementById('fcb-'+key);
+  if(btn){btn.textContent='⏳';btn.style.cursor='default';btn.onclick=null;}
+  const hdrEl=document.getElementById('fhdr-'+key);
+  if(hdrEl) hdrEl.style.background='rgba(16,185,129,.08)';
+
+  // Sync lên JSONBin dùng _safeWrite chống race condition
+  const floorRooms=getRooms().filter(r=>r.site===site&&r.floor===floor);
+  const roomSnap={};
+  floorRooms.forEach(r=>{
+    roomSnap[String(r.id)]={
+      rid:String(r.id),n:r.n,site:r.site,floor:r.floor,result:res(r),
+      issues:CI.filter(ci=>ap(r,ci.k)&&(CK[r.id]||{})[ci.k]==='fail')
+        .map(ci=>({k:ci.k,l:ci.l,note:(NT[r.id]||{})[ci.k]||''})),
+      savedAt:new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})
+    };
+  });
+  try{
+    await _safeWrite(current=>{
+      const dateStr=new Date().toISOString().slice(0,10);
+      let idx=current.findIndex(h=>h._type==='daily'&&h.date===dateStr);
+      if(idx===-1){current.unshift({_type:'daily',uid:'daily_'+dateStr,date:dateStr,floors:{},rooms:{}});idx=0;}
+      if(!current[idx].floors) current[idx].floors={};
+      if(!current[idx].rooms)  current[idx].rooms={};
+      current[idx].floors[key]=true;
+      Object.assign(current[idx].rooms, roomSnap);
+      current[idx].updatedAt=new Date().toLocaleString('vi-VN');
+      return current;
+    });
+    _refreshFloorBtn(site,floor);
+    _updateSiteBtn(site);
+    toast('✅ Tầng '+floor+' — '+site+' đã lưu!');
+  }catch(e){
+    FLOOR_CHECKED[key]=false;saveFC();
+    if(btn){btn.textContent='OK';btn.style.cursor='pointer';btn.onclick=()=>toggleFloor(site,floor);}
+    toast('⚠️ Lưu thất bại: '+e.message);
+    console.error(e);
+  }
+}
+
+
+function _refreshFloorBtn(site,floor){
+  const key=fcKey(site,floor);
+  const btn=document.getElementById('fcb-'+key);
+  if(!btn)return;
+  if(FLOOR_CHECKED[key]){
+    btn.textContent='✅ Đã lưu';
+    btn.style.cssText='padding:3px 14px;border-radius:5px;font-size:11px;font-weight:700;border:1.5px solid var(--green);background:var(--green);color:#fff;cursor:default;opacity:1;font-family:var(--sans)';
+    btn.onclick=null;
+    const hdr=document.getElementById('fhdr-'+key);
+    if(hdr)hdr.style.background='rgba(16,185,129,.08)';
+    return;
+  }
+  const frs=getRooms().filter(r=>r.site===site&&r.floor===floor);
+  const allDone=frs.length>0&&frs.every(r=>res(r)!=='pending');
+  btn.textContent='OK';
+  if(allDone){
+    btn.style.cssText='padding:3px 14px;border-radius:5px;font-size:11px;font-weight:700;border:1.5px solid var(--green);background:rgba(16,185,129,.1);color:var(--green);cursor:pointer;opacity:1;font-family:var(--sans)';
+    btn.onclick=function(){toggleFloor(site,floor);};
+    btn.title='Bấm để lưu trạng thái tầng này lên JSONBin';
+  }else{
+    btn.style.cssText='padding:3px 14px;border-radius:5px;font-size:11px;font-weight:700;border:1.5px solid var(--border2);background:var(--panel2);color:var(--text3);cursor:default;opacity:0.4;font-family:var(--sans)';
+    btn.onclick=null;
+    btn.title='Cần có trạng thái cho tất cả phòng trong tầng này';
+  }
+}
+function _updateSiteBtn(site){
+  const btn=document.getElementById('sokbtn-'+site);
+  if(!btn)return;
+  const siteFloors=[...new Set(getRooms().filter(r=>r.site===site).map(r=>r.floor||'Khác'))];
+  const done=siteFloors.filter(fl=>FLOOR_CHECKED[fcKey(site,fl)]).length;
+  const all=siteFloors.length;
+  if(done===all&&all>0){
+    btn.style.cssText='background:var(--green);color:#fff;border-color:var(--green)';
+    btn.textContent='✅ OK Site';
+  }else{
+    btn.style.cssText='background:var(--red);color:#fff;border-color:var(--red)';
+    btn.textContent='🔴 '+done+'/'+all+' tầng';
+  }
+}
+function updSum(){
+  const fl=filtered();
+  const ok=fl.filter(r=>res(r)==='ok').length;
+  const fail=fl.filter(r=>res(r)==='issue').length;
+  const pend=fl.filter(r=>res(r)==='pending').length;
+  const done=ok+fail;const pct=fl.length>0?Math.round(done/fl.length*100):0;
+  document.getElementById('sTot').textContent=fl.length;
+  document.getElementById('sOK').textContent=ok;
+  document.getElementById('sFail').textContent=fail;
+  document.getElementById('sPend').textContent=pend;
+  document.getElementById('pFill').style.width=pct+'%';
+  document.getElementById('pPct').textContent=pct+'%';
+  document.getElementById('sbottxt').textContent=done+'/'+fl.length+' kiểm tra · '+ok+' OK · '+fail+' lỗi · '+pend+' chờ';
+  const tf=getRooms().filter(r=>res(r)==='issue').length;
+  document.getElementById('tb-fail').textContent=tf;
+  document.getElementById('tb-fail').className='tbadge'+(tf>0?' warn':'');
+  document.getElementById('tb-hist').textContent=lHistLocal().filter(h=>h._type!=='daily'&&h._type!=='reset').length;
+  setTimeout(()=>{
+    const rooms=getRooms();
+    const pairs=[...new Map(rooms.map(r=>[r.site+'~~'+r.floor,{site:r.site,floor:r.floor||'Khác'}])).values()];
+    pairs.forEach(p=>{_refreshFloorBtn(p.site,p.floor);});
+    const sites=[...new Set(rooms.map(r=>r.site))];
+    sites.forEach(s=>_updateSiteBtn(s));
+  },30);
+}
+function expandAll(){const fl=filtered();if(EX.size>=fl.length){EX.clear();}else{fl.forEach(r=>EX.add(r.id));}render();}
+function markAllVis(){
+  if(!confirm('Đánh dấu OK tất cả phòng đang hiển thị?'))return;
+  filtered().forEach(r=>{if(!CK[r.id])CK[r.id]={};CI.filter(ci=>ap(r,ci.k)).forEach(ci=>{if(!CK[r.id][ci.k])CK[r.id][ci.k]='ok';});});
+  save();render();toast('✅ Đã OK tất cả!');
+}
+
+
+
+// ── EMAIL ──
+async function openEmail(site,floor){
+  curSite=site;curFloor=floor||null;
+  const lbl=floor?site.toUpperCase()+' · '+floor:(site==='ALL'?'TẤT CẢ SITE':site.toUpperCase());
+  document.getElementById('mSiteTag').textContent=lbl;
+  // Merge CK từ cloud trước khi báo cáo
+  const mergedCK=await getMergedCK();
+  Object.assign(CK, mergedCK);
+  save();
+  genEmail(site,floor);
+  document.getElementById('emModal').classList.add('open');
+}
+function closeEmail(){document.getElementById('emModal').classList.remove('open');}
+function genEmail(site){
+  const from=document.getElementById('eFrom').value||'[Nhân viên]';
+  const team=document.getElementById('eTeam').value||'IT-IS-WBS';
+  const now=new Date();
+  const timeStr=now.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+  const dateStr=now.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const baseRooms=site==='ALL'?getRooms():getRooms().filter(r=>r.site===site);
+  const scope=curFloor?baseRooms.filter(r=>r.floor===curFloor):baseRooms;
+  // res() đã dùng CK đã merge (từ openEmail)
+  const ok=scope.filter(r=>res(r)==='ok');
+  const fail=scope.filter(r=>res(r)==='issue');
+  const pend=scope.filter(r=>res(r)==='pending');
+  const sl=curFloor?(site+' · '+curFloor):(site==='ALL'?'Tất cả Site':site);
+  let b='Kính gửi: Ban Quản lý,\n\n';
+  b+=`📍 Site: ${sl} | Thời gian: ${timeStr} – ${dateStr}\n`;
+  b+=`📊 Tổng: ${scope.length} phòng | ✅ OK: ${ok.length} | ⚠️ Lỗi: ${fail.length}`;
+  if(pend.length) b+=` | ⏳ Chưa KT: ${pend.length}`;
+  b+='\n';
+  if(fail.length){
+    b+='\n🚨 Phòng lỗi:\n';
+    fail.forEach(r=>{
+      const issues=CI.filter(ci=>(CK[r.id]||{})[ci.k]==='fail').map(ci=>{
+        const note=(NT[r.id]||{})[ci.k]||'';
+        const lbl=ci.l.replace(/^\S+\s/,'').trim();
+        return note?`${lbl} (${note})`:`${lbl} (chưa xử lý)`;
+      });
+      b+=`- ${r.n} (${r.floor}): ${issues.join(', ')}\n`;
+    });
+  }
+  if(ok.length) b+='\n✅ Các phòng còn lại hoạt động bình thường.\n';
+  if(pend.length) b+=`\n⏳ Chưa kiểm tra: ${pend.map(r=>r.n).join(', ')}\n`;
+  if(fail.length){
+    const urgent=fail.filter(r=>CI.some(ci=>(CK[r.id]||{})[ci.k]==='fail'&&!(NT[r.id]||{})[ci.k]));
+    const noted=fail.filter(r=>CI.some(ci=>(CK[r.id]||{})[ci.k]==='fail'&&(NT[r.id]||{})[ci.k]));
+    const parts=[];
+    if(urgent.length) parts.push(`Xử lý sớm ${urgent.map(r=>r.n).join(', ')}`);
+    if(noted.length)  parts.push(`Theo dõi ${noted.map(r=>r.n).join(', ')}`);
+    if(parts.length) b+=`\n📌 Đề xuất: ${parts.join(', ')}.\n`;
+  }
+  b+=`\nTrân trọng,\n${from} – ${team}`;
+  document.getElementById('eprev').textContent=b;
+}
+function copyEmail(){navigator.clipboard.writeText(document.getElementById('eprev').textContent).then(()=>toast('📋 Đã copy!'));}
+function _emailParts(){
+  genEmail(curSite);
+  const to=document.getElementById('eTo').value||'';
+  const cc=document.getElementById('eCc').value||'';
+  const fr=document.getElementById('eFrom').value||'Nhân viên';
+  const sl=curSite==='ALL'?'Tất cả Site':curSite;
+  const sub=`[VIB-IT] Báo cáo kiểm tra phòng họp – ${sl} – ${new Date().toLocaleDateString('vi-VN')} – ${fr}`;
+  const body=document.getElementById('eprev').textContent;
+  return {to,cc,sub,body};
+}
+function sendViaGmail(){
+  const {to,cc,sub,body}=_emailParts();
+  const u='https://mail.google.com/mail/?view=cm'
+    +(to?'&to='+encodeURIComponent(to):'')
+    +(cc?'&cc='+encodeURIComponent(cc):'')
+    +'&su='+encodeURIComponent(sub)
+    +'&body='+encodeURIComponent(body);
+  window.open(u,'_blank');
+}
+function sendViaOutlookWeb(){
+  const {to,cc,sub,body}=_emailParts();
+  const u='https://outlook.office.com/mail/deeplink/compose?'
+    +(to?'to='+encodeURIComponent(to)+'&':'')
+    +(cc?'cc='+encodeURIComponent(cc)+'&':'')
+    +'subject='+encodeURIComponent(sub)
+    +'&body='+encodeURIComponent(body);
+  window.open(u,'_blank');
+}
+function sendViaMailto(){
+  const {to,cc,sub,body}=_emailParts();
+  const u=`mailto:${encodeURIComponent(to)}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(sub)}&body=${encodeURIComponent(body)}`;
+  window.location.href=u;
+}
+function sendEmail(){sendViaMailto();}
+
+// ── SAVE / HISTORY ──
+async function openSave(){
+  document.getElementById('saveDate').textContent=new Date().toLocaleDateString('vi-VN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  // Merge CK từ cloud trước khi lưu
+  const mergedCK=await getMergedCK();
+  // Ghi đè CK local bằng merged (cập nhật trạng thái từ máy khác)
+  Object.assign(CK, mergedCK);
+  save();
+  document.getElementById('saveModal').classList.add('open');
+}
+function closeSave(){document.getElementById('saveModal').classList.remove('open');}
+async function doSave(){
+  const name=document.getElementById('saveName').value.trim();
+  if(!name){
+    const inp=document.getElementById('saveName');
+    inp.style.border='1.5px solid var(--red)';
+    inp.placeholder='⚠ Vui lòng nhập tên!';
+    inp.focus(); return;
+  }
+  const ss=document.getElementById('syncStatus');
+  const btn=document.getElementById('btnSave');
+  const now=new Date();
+  // Dùng CK đã merge từ cloud (đã được merge trong openSave)
+  const snap=getRooms().map(r=>{
+    const ck=CK[String(r.id)]||CK[r.id]||{};
+    const rv=resWithCK(r,CK);
+    const issArr=CI.filter(ci=>ap(r,ci.k)&&ck[ci.k]==='fail')
+      .map(ci=>({k:ci.k,l:ci.l,note:(NT[r.id]||{})[ci.k]||''}));
+    return {id:r.id,n:r.n,site:r.site,floor:r.floor,city:r.city,
+            result:rv,checks:{...ck},issues:issArr};
+  });
+  const entry={
+    uid:now.getTime(),date:TODAY,
+    time:now.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}),
+    checker:name,savedAt:now.toLocaleString('vi-VN'),rooms:snap
+  };
+
+  // UI loading
+  ss.style.display='flex';ss.style.background='rgba(59,130,246,.08)';
+  ss.style.border='1px solid rgba(59,130,246,.2)';ss.style.color='var(--text2)';
+  ss.innerHTML='<span style="animation:spin 1s linear infinite;display:inline-block">⏳</span>&nbsp;Đang đồng bộ lên JSONBin...';
+  btn.disabled=true;btn.textContent='Đang lưu...';
+
+  try{
+    // Dùng _safeWrite: GET → merge → PUT với retry chống race condition
+    const merged=await _safeWrite(current=>{
+      current.unshift(entry);
+      if(current.length>500) current.pop();
+      return current;
+    });
+    const histCount=merged.filter(h=>h._type!=='daily'&&h._type!=='reset').length;
+    document.getElementById('tb-hist').textContent=histCount;
+    ss.style.background='rgba(16,185,129,.08)';ss.style.border='1px solid rgba(16,185,129,.2)';
+    ss.style.color='var(--green)';
+    ss.innerHTML='✅ Đã lưu & đồng bộ lên JSONBin thành công!';
+    btn.textContent='✅ Đã xong';
+    // Reset floor checked sau khi lưu lịch sử
+    FLOOR_CHECKED={};saveFC();
+    toast('✅ Đã lưu! Mọi người có thể xem ngay.');
+    if(document.getElementById('v-history').style.display!=='none')rHist();
+    if(document.getElementById('v-report').style.display!=='none')renderReport();
+    setTimeout(()=>{closeSave();btn.disabled=false;btn.textContent='💾 Lưu & Đồng bộ';},1200);
+  }catch(err){
+    // Fallback: lưu local nếu JSONBin lỗi
+    const localHist=lHistLocal();
+    localHist.unshift(entry);
+    if(localHist.length>500)localHist.pop();
+    localStorage.setItem(KH,JSON.stringify(localHist));
+    document.getElementById('tb-hist').textContent=localHist.length;
+    ss.style.background='rgba(245,158,11,.08)';ss.style.border='1px solid rgba(245,158,11,.25)';
+    ss.style.color='var(--yellow)';
+    ss.innerHTML='⚠️ JSONBin lỗi — đã lưu cục bộ trên máy này. Kiểm tra kết nối mạng.';
+    btn.disabled=false;btn.textContent='💾 Lưu & Đồng bộ';
+    toast('⚠️ Lưu cục bộ OK. JSONBin chưa sync!');
+    console.error('JSONBin error:',err);
+  }
+}
+function renderHistFromCache(hist){
+  const el=document.getElementById('hc');
+  if(!hist||!hist.length){
+    el.innerHTML='<div class="hempty">📭 Chưa có lịch sử nào.<br>Hoàn thành kiểm tra rồi nhấn 💾 để lưu.<br><span style="font-size:11px;color:var(--text3)">Mỗi lần nhấn 💾 sẽ tạo 1 bản ghi riêng.</span></div>';
+    return;
+  }
+  _renderHistHTML(el, hist);
+}
+async function rHist(){
+  const el=document.getElementById('hc');
+  el.innerHTML='<div class="hempty"><span style="animation:spin 1s linear infinite;display:inline-block;font-size:20px">⏳</span><br>Đang tải lịch sử từ JSONBin...</div>';
+  const hist=await lHist();
+  _renderHistHTML(el, hist);
+}
+function _renderHistHTML(el, hist){
+  if(!hist||!hist.length){el.innerHTML='<div class="hempty">📭 Chưa có lịch sử nào.<br>Hoàn thành kiểm tra rồi nhấn 💾 để lưu.<br><span style="font-size:11px;color:var(--text3)">Mỗi lần nhấn 💾 sẽ tạo 1 bản ghi riêng.</span></div>';return;}
+
+  // Group by date
+  const byDate={};
+  hist.forEach((h,i)=>{
+    if(!byDate[h.date])byDate[h.date]=[];
+    byDate[h.date].push({...h,_idx:i});
+  });
+
+  el.innerHTML=Object.entries(byDate).map(([date,entries])=>{
+    const totalSaves=entries.length;
+    // summary across all saves of the day (use latest)
+    const latest=entries[0];
+    const latestRooms=Array.isArray(latest.rooms)?latest.rooms:Object.values(latest.rooms||{});
+    const okL=latestRooms.filter(r=>r.result==='ok').length;
+    const failL=latestRooms.filter(r=>r.result==='issue').length;
+    const pendL=latestRooms.filter(r=>r.result==='pending').length;
+    const dtLabel=new Date(date).toLocaleDateString('vi-VN',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'});
+
+    const savesHTML=entries.map((h)=>{
+      const hRooms=Array.isArray(h.rooms)?h.rooms:Object.values(h.rooms||{});
+      const ok=hRooms.filter(r=>r.result==='ok').length;
+      const fail=hRooms.filter(r=>r.result==='issue').length;
+      const pend=hRooms.filter(r=>r.result==='pending').length;
+      const bS={};hRooms.forEach(r=>{if(!bS[r.site])bS[r.site]=[];bS[r.site].push(r);});
+      const sites=Object.entries(bS).map(([site,rs])=>{
+        const rr=rs.map(r=>{const iH=r.issues.length?r.issues.map(x=>`<div class="hri">✗ ${x.l.replace(/^.{2}/,'')}${x.note?' → '+x.note:''}</div>`).join(''):'';
+          return `<div class="hr h-${r.result}"><div class="hrn">${r.n}</div><div class="hrd" style="color:${r.result==='ok'?'var(--green)':r.result==='issue'?'var(--red)':'var(--text3)'}">${r.result==='ok'?'✅ OK':r.result==='issue'?'❌ Lỗi':'⏳ Chờ'}</div>${iH}</div>`;
+        }).join('');
+        return `<div class="hsite"><div class="hsn">${site} (${rs.length})</div><div class="hrg">${rr}</div></div>`;
+      }).join('');
+      return `<div style="border:1px solid var(--border);border-radius:6px;margin-bottom:8px;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg2);cursor:pointer" onclick="this.nextElementSibling.classList.toggle('open')">
+          <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text2)">${h.time||''}</span>
+          <span style="font-size:11px;font-weight:600;color:var(--text)">${h.checker}</span>
+          <div class="hchips">
+            <span class="hc hc-ok">✓ ${ok}</span>
+            ${fail?`<span class="hc hc-fl">✗ ${fail}</span>`:''}
+            ${pend?`<span class="hc hc-pe">⏳ ${pend}</span>`:''}
+          </div>
+          <span style="font-size:10px;color:var(--text3);margin-left:auto">${h.savedAt}</span>
+          <div style="display:flex;gap:4px;margin-left:8px">
+            <button class="btn bp bsm" onclick="event.stopPropagation();eHistUID(${h.uid})">📧</button>
+            <button class="btn bd bsm" onclick="event.stopPropagation();dHistUID(${h.uid})">🗑</button>
+          </div>
+          <span style="font-size:10px;color:var(--text3)">▼</span>
+        </div>
+        <div class="hdb" style="padding:10px 14px">${sites}</div>
+      </div>`;
+    }).join('');
+
+    return `<div class="hday" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:var(--r) var(--r) 0 0;border-bottom:2px solid var(--accent)">
+        <span class="hdate">${dtLabel}</span>
+        <span style="font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:rgba(59,130,246,.15);color:var(--accent);border:1px solid rgba(59,130,246,.3)">${totalSaves} lần lưu</span>
+        <div class="hchips">
+          <span class="hc hc-ok">✓ ${okL}</span>
+          ${failL?`<span class="hc hc-fl">✗ ${failL}</span>`:''}
+          ${pendL?`<span class="hc hc-pe">⏳ ${pendL}</span>`:''}
+        </div>
+        <span style="font-size:11px;color:var(--text3);margin-left:auto">bản mới nhất: ${entries[0].checker} lúc ${entries[0].time||entries[0].savedAt}</span>
+      </div>
+      <div style="border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r);padding:10px 14px;background:var(--panel)">
+        ${savesHTML}
+      </div>
+    </div>`;
+  }).join('');
+}
+function thist(i){const b=document.getElementById('hb-'+i);if(b)b.classList.toggle('open');}
+async function dHistUID(uid){
+  if(!confirm('Xóa bản ghi này?'))return;
+  toast('⏳ Đang xóa...');
+  const hist=await lHist();
+  const h=hist.filter(x=>x.uid!==uid);
+  await sHist(h);
+  document.getElementById('tb-hist').textContent=h.length;
+  rHist();toast('🗑 Đã xóa và đồng bộ!');
+}
+
+async function resetAllHistory(){
+  const hist=await lHist();
+  if(!hist.length){toast('⚠ Không có lịch sử để xóa');return;}
+  if(!confirm('Xóa toàn bộ '+hist.length+' bản ghi lịch sử?\nHành động này không thể hoàn tác.'))return;
+  await sHist([]);
+  document.getElementById('tb-hist').textContent=0;
+  toast('🗑 Đã xóa toàn bộ lịch sử');
+  if(document.getElementById('v-history').style.display!=='none')rHist();
+  if(document.getElementById('v-report').style.display!=='none')renderReport();
+}
+async function eHistUID(uid){
+  const hist2=await lHist();const h=hist2.find(x=>x.uid===uid);if(!h)return;
+  const ok=h.rooms.filter(r=>r.result==='ok');const fail=h.rooms.filter(r=>r.result==='issue');const pend=h.rooms.filter(r=>r.result==='pending');
+  const L='─'.repeat(48);
+  let b=`Kính gửi: Ban Quản lý\nNgười KT: ${h.checker}  |  Ngày: ${h.date}  |  Lưu: ${h.savedAt}\n${L}\nOK: ${ok.length}  Lỗi: ${fail.length}  Chưa KT: ${pend.length}\n\n`;
+  if(fail.length){b+=`${L}\nPHÒNG CÓ VẤN ĐỀ:\n`;fail.forEach(r=>{b+=`  [!] ${r.n} (${r.site})\n`;r.issues.forEach(x=>{b+=`      - ${x.k.toUpperCase()}: LỖI${x.note?' → '+x.note:''}\n`;});});b+='\n';}
+  if(ok.length){b+=`${L}\nOK:\n  ${ok.map(r=>r.n).join(', ')}\n\n`;}
+  b+=`${L}\nTrân trọng,\n${h.checker}\nIT-IS-WBS – VIB`;
+  const sub=encodeURIComponent(`[VIB-IT] Lịch sử kiểm tra phòng họp – ${h.date}`);
+  window.open(`mailto:?subject=${sub}&body=${encodeURIComponent(b)}`,'_blank');
+}
+
+// ══════════════════════════════════════════════
+//  ANALYTICS / REPORT ENGINE
+// ══════════════════════════════════════════════
+function getReportData(){
+  // Trả về TẤT CẢ entries trong khoảng thời gian (không dedup)
+  // Mỗi entry = 1 lần lưu = 1 lượt kiểm tra
+  const hist=lHistLocal();
+  const daysVal=document.getElementById('rDays').value;
+  const days=parseInt(daysVal)||30;
+  const rSite=document.getElementById('rSite').value;
+  const rCity=document.getElementById('rCity').value;
+
+  let cutStr='';
+  if(daysVal!=='999'){
+    const cutoff=new Date();
+    cutoff.setDate(cutoff.getDate()-days+1);
+    const y=cutoff.getFullYear();
+    const m=String(cutoff.getMonth()+1).padStart(2,'0');
+    const d=String(cutoff.getDate()).padStart(2,'0');
+    cutStr=`${y}-${m}-${d}`;
+  }
+
+  // Lấy TẤT CẢ entries (không dedup theo ngày)
+  // Bỏ qua daily entry (_type==='daily') — chỉ dùng entry do nhấn 💾
+  return hist
+    .filter(h=>h.date && h._type!=='daily' && (!cutStr || h.date>=cutStr))
+    .map(h=>{
+      // rooms có thể là array hoặc object {rid:entry} — chuẩn hóa về array
+      const roomsArr=Array.isArray(h.rooms)?h.rooms:Object.values(h.rooms||{});
+      return {
+        ...h,
+        rooms:roomsArr.filter(r=>{
+          if(!r||!r.result) return false;
+          if(rSite && r.site!==rSite) return false;
+          if(rCity && r.city!==rCity) return false;
+          return true;
+        })
+      };
+    })
+    .filter(h=>h.rooms.length>0)
+    .sort((a,b)=>(b.uid||0)-(a.uid||0));
+}
+
+// Ngày duy nhất có trong data (để đếm số ngày thực sự)
+function countUniqueDates(data){
+  return new Set(data.map(h=>h.date)).size;
+}
+
+function renderReport(){
+  const data=getReportData();
+  const el=document.getElementById('reportContent');
+  if(!data.length){
+    el.innerHTML='<div class="aempty">📊 Chưa có dữ liệu trong phạm vi đã chọn.<br>Hãy lưu báo cáo ít nhất 1 ngày để xem phân tích.</div>';
+    return;
+  }
+
+  // ── Aggregate ──
+  // roomMap: key = String(r.id), value = stats object
+  const roomMap={};
+  const siteMap={};
+  const floorMap={};
+  const issueMap={}; // device key → total fail count
+
+  data.forEach(h=>{
+    const roomsArr2=Array.isArray(h.rooms)?h.rooms:Object.values(h.rooms||{});
+    roomsArr2.forEach(r=>{
+      const rid=String(r.id);
+      const result=r.result||'pending';
+      const issues=Array.isArray(r.issues)?r.issues:[];
+
+      // Init room entry
+      if(!roomMap[rid]){
+        roomMap[rid]={rid,n:r.n,site:r.site,floor:r.floor,city:r.city,
+                      failCount:0,okCount:0,pendCount:0,totalDays:0,issues:{}};
+      }
+      roomMap[rid].totalDays++;
+      if(result==='issue'){
+        roomMap[rid].failCount++;
+        issues.forEach(x=>{
+          if(!x||!x.k) return;
+          roomMap[rid].issues[x.k]=(roomMap[rid].issues[x.k]||0)+1;
+          issueMap[x.k]=(issueMap[x.k]||0)+1;
+        });
+        if(r.floor) floorMap[r.floor]=(floorMap[r.floor]||0)+1;
+      } else if(result==='ok'){
+        roomMap[rid].okCount++;
+      } else {
+        roomMap[rid].pendCount++;
+      }
+
+      // Site map
+      if(r.site){
+        if(!siteMap[r.site]) siteMap[r.site]={ok:0,fail:0,pend:0,total:0};
+        siteMap[r.site].total++;
+        if(result==='ok')        siteMap[r.site].ok++;
+        else if(result==='issue') siteMap[r.site].fail++;
+        else                      siteMap[r.site].pend++;
+      }
+    });
+  });
+
+  const totalDays=countUniqueDates(data); // số ngày thực sự (không tính trùng)
+  const allRooms=Object.values(roomMap);
+  const totalChecks=allRooms.reduce((s,r)=>s+r.totalDays,0);
+  const totalOKs  =allRooms.reduce((s,r)=>s+r.okCount,0);
+  const totalFails=allRooms.reduce((s,r)=>s+r.failCount,0);
+  const avgOKRate =totalChecks>0?Math.round(totalOKs/totalChecks*100):0;
+
+  const failedRooms=[...allRooms].filter(r=>r.failCount>0).sort((a,b)=>b.failCount-a.failCount);
+  const stableRooms=[...allRooms].filter(r=>r.failCount===0&&r.totalDays>0).sort((a,b)=>b.okCount-a.okCount);
+
+  // Phòng master chưa có trong lịch sử
+  const rSiteVal=document.getElementById('rSite').value;
+  const rCityVal=document.getElementById('rCity').value;
+  const masterRooms=getRooms().filter(r=>(!rSiteVal||r.site===rSiteVal)&&(!rCityVal||r.city===rCityVal));
+  const checkedIds=new Set(Object.keys(roomMap));
+  const uncheckedRooms=masterRooms.filter(r=>!checkedIds.has(String(r.id)));
+
+  const floorRank=Object.entries(floorMap).sort((a,b)=>b[1]-a[1]);
+  const issueRank=Object.entries(issueMap).sort((a,b)=>b[1]-a[1]);
+  const siteRank =Object.entries(siteMap).sort((a,b)=>b[1].fail-a[1].fail);
+  const maxFail  =failedRooms.length>0?failedRooms[0].failCount:1;
+  const maxFloor =floorRank.length>0?floorRank[0][1]:1;
+  const maxIssue =issueRank.length>0?issueRank[0][1]:1;
+
+  // ── Build HTML ──
+  let html='';
+
+  // Phạm vi báo cáo rõ ràng
+  const daysLabel=document.getElementById('rDays').value==='999'?'Toàn bộ lịch sử':document.getElementById('rDays').value+' ngày gần nhất';
+  const siteLabel=document.getElementById('rSite').value||'Tất cả Site';
+  const cityLabel=document.getElementById('rCity').value==='Ho Chi Minh'?'TP.HCM':document.getElementById('rCity').value==='Ha Noi'?'Hà Nội':'';
+  const allDates=data.map(h=>h.date).sort();
+  const rangeFrom=allDates.length>0?allDates[0]:'';
+  const rangeTo  =allDates.length>0?allDates[allDates.length-1]:'';
+  html+=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;margin-bottom:14px;font-size:11px;font-family:var(--mono)">
+    <span style="color:var(--accent);font-weight:700">📅 ${daysLabel}</span>
+    <span style="color:var(--border2)">|</span>
+    <span style="color:var(--text2)">🏢 ${siteLabel}${cityLabel?' · '+cityLabel:''}</span>
+    <span style="color:var(--border2)">|</span>
+    <span style="color:var(--text3)">${rangeFrom?rangeFrom+' → '+rangeTo:''}</span>
+    <span style="color:var(--border2)">|</span>
+    <span style="color:var(--text2)">${totalDays} ngày · ${totalChecks} lượt KT · ${allRooms.length} phòng</span>
+  </div>`;
+
+  // KPI
+  html+=`<div class="kpi-row">
+    <div class="kpi kpi-rate"><div class="kpi-val">${avgOKRate}%</div><div class="kpi-lbl">Tỷ lệ OK</div><div class="kpi-sub">${totalOKs}/${totalChecks} lượt</div></div>
+    <div class="kpi kpi-ok"><div class="kpi-val">${stableRooms.length}</div><div class="kpi-lbl">Phòng ổn định</div><div class="kpi-sub">0 lỗi trong kỳ</div></div>
+    <div class="kpi kpi-fail"><div class="kpi-val">${failedRooms.length}</div><div class="kpi-lbl">Phòng có lỗi</div><div class="kpi-sub">Cần theo dõi</div></div>
+    <div class="kpi kpi-pend"><div class="kpi-val">${totalFails}</div><div class="kpi-lbl">Tổng lần lỗi</div><div class="kpi-sub">Trong ${totalDays} ngày</div></div>
+    <div class="kpi kpi-days"><div class="kpi-val">${totalDays}</div><div class="kpi-lbl">Ngày dữ liệu</div><div class="kpi-sub">${allRooms.length} phòng có log</div></div>
+  </div>`;
+
+  // 2 col: phòng lỗi + loại thiết bị
+  html+=`<div class="grid-2">`;
+
+  // Top phòng lỗi
+  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">🏆 Phòng lỗi nhiều nhất <span class="sec-badge sb-red">${failedRooms.length}</span></span></div><div class="chart-wrap">`;
+  if(!failedRooms.length){
+    html+=`<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">🎉 Không có phòng nào ghi nhận lỗi!</div>`;
+  } else {
+    failedRooms.slice(0,12).forEach((r,i)=>{
+      const pct=Math.round(r.failCount/maxFail*100);
+      const rate=Math.round(r.failCount/r.totalDays*100);
+      const cls=i===0?'rnk-1':i===1?'rnk-2':i===2?'rnk-3':'';
+      html+=`<div class="chart-row">
+        <span class="chart-lbl" title="${r.n} – ${r.site}"><span class="${cls}" style="font-family:var(--mono);font-weight:700">${r.n}</span></span>
+        <div class="chart-bar-wrap"><div class="chart-bar bar-red" style="width:${pct}%">${pct>20?r.site:''}</div></div>
+        <span class="chart-num">${r.failCount}× <span style="color:var(--red)">${rate}%</span></span>
+      </div>`;
+    });
+  }
+  html+=`</div></div>`;
+
+  // Loại lỗi thiết bị
+  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">🔧 Thiết bị lỗi nhiều nhất <span class="sec-badge sb-red">${issueRank.length} loại</span></span></div><div class="chart-wrap">`;
+  if(!issueRank.length){
+    html+=`<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">✅ Không có lỗi nào.</div>`;
+  } else {
+    issueRank.forEach(([k,cnt],i)=>{
+      const ci=CI.find(c=>c.k===k)||{l:'? '+k};
+      const pct=Math.round(cnt/maxIssue*100);
+      const clr=i===0?'bar-red':i===1?'bar-org':'bar-pur';
+      html+=`<div class="chart-row">
+        <span class="chart-lbl">${ci.l.replace(/^\S+\s/,'').trim()}</span>
+        <div class="chart-bar-wrap"><div class="chart-bar ${clr}" style="width:${pct}%">${pct>20?cnt+' lần':''}</div></div>
+        <span class="chart-num">${cnt} lần</span>
+      </div>`;
+    });
+  }
+  html+=`</div></div></div>`;
+
+  // 2 col: tầng + site
+  html+=`<div class="grid-2">`;
+  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">🏢 Tầng xuất hiện lỗi <span class="sec-badge sb-red">${floorRank.length} tầng</span></span></div><div class="chart-wrap">`;
+  if(!floorRank.length){html+='<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">✅ Không có lỗi.</div>';}
+  else{floorRank.forEach(([floor,cnt])=>{
+    const pct=Math.round(cnt/maxFloor*100);
+    const barTxt=pct>20?cnt+' lần':'';
+    html+='<div class="chart-row"><span class="chart-lbl">'+floor+'</span>';
+    html+='<div class="chart-bar-wrap"><div class="chart-bar bar-org" style="width:'+pct+'%">'+barTxt+'</div></div>';
+    html+='<span class="chart-num">'+cnt+' lần</span></div>';
+  });}
+  html+=`</div></div>`;
+
+  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">🏗 Hiện trạng theo Site</span></div><div class="chart-wrap">`;
+  siteRank.forEach(([site,d])=>{
+    const okR =d.total>0?Math.round(d.ok  /d.total*100):0;
+    const failR=d.total>0?Math.round(d.fail/d.total*100):0;
+    html+=`<div class="chart-row"><span class="chart-lbl" title="${site}">${site}</span>
+      <div class="chart-bar-wrap">
+        <div style="display:flex;height:100%">
+          <div style="width:${okR}%;background:var(--green);border-radius:4px 0 0 4px;height:100%"></div>
+          <div style="width:${failR}%;background:var(--red);height:100%"></div>
+          <div style="flex:1;background:var(--border);border-radius:0 4px 4px 0;height:100%"></div>
+        </div>
+      </div>
+      <span class="chart-num" style="width:90px;font-size:10px"><span style="color:var(--green)">${okR}%✓</span> <span style="color:var(--red)">${failR}%✗</span></span>
+    </div>`;
+  });
+  html+=`</div></div></div>`;
+
+  // Phòng ổn định
+  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">✅ Phòng ổn định <span class="sec-badge sb-grn">${stableRooms.length} phòng</span></span></div>`;
+  if(!stableRooms.length){html+='<div style="padding:14px;color:var(--text3);font-size:12px">Chưa có phòng nào ổn định hoàn toàn.</div>';}
+  else{
+    html+=`<div class="rtable"><div class="rtable-hdr" style="grid-template-columns:80px 1fr 80px 60px"><span>Phòng</span><span>Site / Tầng</span><span>Ngày OK</span><span>Tỷ lệ</span></div>`;
+    stableRooms.slice(0,15).forEach(r=>{
+      const rate=r.totalDays>0?Math.round(r.okCount/r.totalDays*100):0;
+      html+=`<div class="rtable-row" style="grid-template-columns:80px 1fr 80px 60px">
+        <span class="rname" style="font-size:12px">${r.n}</span>
+        <span style="font-size:11px;color:var(--text3)">${r.site} · ${r.floor}</span>
+        <span style="font-family:var(--mono);color:var(--green);font-size:11px">${r.okCount}/${r.totalDays}</span>
+        <span class="rtag rtag-g">${rate}%</span>
+      </div>`;
+    });
+    html+=`</div>`;
+  }
+  html+=`</div>`;
+
+  // Fix recommendations
+  html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">🔨 Đề xuất khắc phục <span class="sec-badge sb-red">${failedRooms.length} phòng</span></span></div>`;
+  if(!failedRooms.length){html+=`<div style="padding:14px;color:var(--text3);font-size:12px">🎉 Không có lỗi cần xử lý!</div>`;}
+  else failedRooms.slice(0,10).forEach(r=>{
+    const rate=Math.round(r.failCount/r.totalDays*100);
+    const issuesSorted=Object.entries(r.issues).sort((a,b)=>b[1]-a[1]);
+    html+=`<div class="fix-card ${rate>=60?'':'fix-warn'}">
+      <div class="fix-room">
+        <span>${r.n}</span>
+        <span class="rtag ${rate>=50?'rtag-r':'rtag-y'}">${rate}% ngày lỗi</span>
+        <span style="font-size:10px;color:var(--text3)">${r.site} · ${r.floor}</span>
+        <span style="font-size:10px;color:var(--text3);margin-left:auto">${r.failCount} lỗi / ${r.totalDays} ngày</span>
+      </div>
+      <div class="fix-issues">${issuesSorted.map(([k,cnt])=>{
+        const ci=CI.find(c=>c.k===k)||{l:'? '+k,fix:'Liên hệ kỹ thuật'};
+        return `<div class="fix-issue-row">
+          <span class="fix-issue-ico">${ci.l.slice(0,2)}</span>
+          <div class="fix-issue-detail">
+            <div class="fix-issue-name">${ci.l.replace(/^\S+\s/,'').trim()}</div>
+            <div class="fix-issue-cnt">${cnt} lần / ${r.totalDays} ngày (${Math.round(cnt/r.totalDays*100)}%)</div>
+            <div class="fix-issue-rec">💡 ${ci.fix}</div>
+          </div>
+        </div>`;
+      }).join('')}</div>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // Phòng chưa có dữ liệu
+  if(uncheckedRooms.length){
+    html+=`<div class="sec"><div class="sec-hdr"><span class="sec-title">⏳ Chưa có dữ liệu <span class="sec-badge">${uncheckedRooms.length} phòng</span></span></div>
+      <div style="padding:10px 14px;background:var(--panel);border:1px solid var(--border);border-radius:var(--r);font-size:11px;color:var(--text3)">
+        ${uncheckedRooms.map(r=>`<span style="margin-right:8px">${r.n} <span style="color:var(--text3);font-size:10px">(${r.site})</span></span>`).join('')}
+      </div></div>`;
+  }
+
+  el.innerHTML=html;
+}
+function exportTxtReport(){
+  const data=getReportData();
+  if(!data.length){toast('⚠ Không có dữ liệu để xuất!');return;}
+  const days=parseInt(document.getElementById('rDays').value)||30;
+  const rSite=document.getElementById('rSite').value||'Tất cả';
+  const L='═'.repeat(60);const l='─'.repeat(60);
+  const now=new Date().toLocaleString('vi-VN');
+
+  const roomMap={};
+  data.forEach(h=>h.rooms.forEach(r=>{
+    if(!roomMap[r.id])roomMap[r.id]={n:r.n,site:r.site,floor:r.floor,city:r.city,failCount:0,okCount:0,totalDays:0,issues:{},notes:[]};
+    roomMap[r.id].totalDays++;
+    if(r.result==='issue'){roomMap[r.id].failCount++;r.issues.forEach(x=>{roomMap[r.id].issues[x.k]=(roomMap[r.id].issues[x.k]||0)+1;if(x.note)roomMap[r.id].notes.push(`[${h.date}] ${x.l.replace(/^.{2}/,'')}: ${x.note}`);});}
+    else if(r.result==='ok')roomMap[r.id].okCount++;
+  }));
+
+  const allRooms=Object.values(roomMap);
+  const failedRooms=allRooms.filter(r=>r.failCount>0).sort((a,b)=>b.failCount-a.failCount);
+  const stableRooms=allRooms.filter(r=>r.failCount===0&&r.totalDays>0);
+  const issueMap={};
+  data.forEach(h=>h.rooms.forEach(r=>{if(r.result==='issue')r.issues.forEach(x=>{issueMap[x.k]=(issueMap[x.k]||0)+1;});}));
+  const floorMap={};
+  data.forEach(h=>h.rooms.forEach(r=>{if(r.result==='issue'&&r.floor)floorMap[r.floor]=(floorMap[r.floor]||0)+1;}));
+  const totalChecks=allRooms.reduce((s,r)=>s+r.totalDays,0);
+  const totalOKs=allRooms.reduce((s,r)=>s+r.okCount,0);
+  const avgOKRate=totalChecks>0?Math.round(totalOKs/totalChecks*100):0;
+
+  let txt='';
+  txt+=`${L}\n  BÁO CÁO PHÂN TÍCH HIỆN TRẠNG PHÒNG HỌP – VIB\n  IT-IS-WBS\n${L}\n`;
+  txt+=`Xuất lúc     : ${now}\nPhạm vi      : ${days} ngày gần nhất (${data[data.length-1]?.date||''} → ${data[0]?.date||''})\nSite         : ${rSite}\nTổng ngày DL : ${data.length} ngày\n\n`;
+  txt+=`${l}\nI. TỔNG KẾT TỔNG QUAN\n${l}\n`;
+  txt+=`  Tỷ lệ OK trung bình : ${avgOKRate}%\n`;
+  txt+=`  Phòng ổn định       : ${stableRooms.length} phòng\n`;
+  txt+=`  Phòng có lỗi        : ${failedRooms.length} phòng\n`;
+  txt+=`  Tổng lần lỗi        : ${failedRooms.reduce((s,r)=>s+r.failCount,0)} lần\n\n`;
+
+  txt+=`${l}\nII. PHÒNG CÓ LỖI – XẾP HẠNG THEO TẦN SUẤT\n${l}\n`;
+  if(!failedRooms.length){txt+='  (Không có phòng nào ghi nhận lỗi)\n\n';}
+  else{
+    txt+=`  Hạng  Phòng       Site            Tầng    Lỗi   Tỷ lệ\n`;
+    txt+=`  ${'─'.repeat(55)}\n`;
+    failedRooms.forEach((r,i)=>{
+      const rate=Math.round(r.failCount/r.totalDays*100);
+      txt+=`  ${(i+1).toString().padEnd(5)} ${r.n.padEnd(11)} ${r.site.padEnd(15)} ${r.floor.padEnd(7)} ${r.failCount.toString().padEnd(5)} ${rate}%\n`;
+    });txt+='\n';
+  }
+
+  txt+=`${l}\nIII. LOẠI LỖI THIẾT BỊ THƯỜNG GẶP\n${l}\n`;
+  const issRank=Object.entries(issueMap).sort((a,b)=>b[1]-a[1]);
+  if(!issRank.length){txt+='  (Không có lỗi nào)\n\n';}
+  else{issRank.forEach(([k,cnt])=>{const ci=CI.find(c=>c.k===k);txt+=`  ✗ ${(ci?ci.l.replace(/^.{3}/,''):k).padEnd(30)} : ${cnt} lần\n`;});txt+='\n';}
+
+  txt+=`${l}\nIV. TẦNG / KHU VỰC XUẤT HIỆN LỖI NHIỀU NHẤT\n${l}\n`;
+  const flrRank=Object.entries(floorMap).sort((a,b)=>b[1]-a[1]);
+  if(!flrRank.length){txt+='  (Không có dữ liệu)\n\n';}
+  else{flrRank.forEach(([fl,cnt])=>{txt+=`  ${fl.padEnd(12)} : ${cnt} lần  ${'█'.repeat(Math.min(cnt,20))}\n`;});txt+='\n';}
+
+  txt+=`${l}\nV. ĐỀ XUẤT KHẮC PHỤC LỖI\n${l}\n`;
+  if(!failedRooms.length){txt+='  Không có lỗi cần khắc phục.\n\n';}
+  else{
+    failedRooms.slice(0,10).forEach((r,i)=>{
+      const rate=Math.round(r.failCount/r.totalDays*100);
+      txt+=`\n  ${i+1}. ${r.n} – ${r.site} (${r.floor}) | Tỷ lệ lỗi: ${rate}%\n`;
+      Object.entries(r.issues).sort((a,b)=>b[1]-a[1]).forEach(([k,cnt])=>{
+        const ci=CI.find(c=>c.k===k);
+        txt+=`     [${cnt}x] ${ci?ci.l.replace(/^.{3}/,''):'?'}\n`;
+        txt+=`     → Khắc phục: ${ci?ci.fix:'Liên hệ kỹ thuật'}\n`;
+      });
+      if(r.notes.length){txt+=`     Ghi chú lỗi:\n`;r.notes.slice(0,3).forEach(n=>txt+=`       - ${n}\n`);}
+    });txt+='\n';
+  }
+
+  txt+=`${l}\nVI. PHÒNG HOẠT ĐỘNG ỔN ĐỊNH\n${l}\n`;
+  if(!stableRooms.length){txt+='  (Chưa có phòng nào ổn định hoàn toàn)\n\n';}
+  else{
+    const bySite={};stableRooms.forEach(r=>{if(!bySite[r.site])bySite[r.site]=[];bySite[r.site].push(r);});
+    Object.entries(bySite).forEach(([site,rs])=>{txt+=`  ► ${site}: ${rs.map(r=>r.n).join(', ')}\n`;});txt+='\n';
+  }
+
+  txt+=`${L}\n  Báo cáo được tạo tự động bởi hệ thống VIB IT-IS-WBS\n${L}\n`;
+
+  const blob=new Blob([txt],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`VIB_BaoCaoPhongHop_${new Date().toLocaleDateString('vi-VN').replace(/\//g,'-')}.txt`;
+  a.click();URL.revokeObjectURL(a.href);
+  toast('📄 Đã xuất báo cáo TXT!');
+}
+
+// ── EXPORT EMAIL REPORT ──
+function exportEmailReport(){
+  const data=getReportData();
+  if(!data.length){toast('⚠ Không có dữ liệu để gửi!');return;}
+  const days=parseInt(document.getElementById('rDays').value)||30;
+  const rSite=document.getElementById('rSite').value||'Tất cả';
+  const now=new Date().toLocaleDateString('vi-VN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const roomMap={};
+  data.forEach(h=>h.rooms.forEach(r=>{
+    if(!roomMap[r.id])roomMap[r.id]={n:r.n,site:r.site,floor:r.floor,failCount:0,totalDays:0,issues:{}};
+    roomMap[r.id].totalDays++;
+    if(r.result==='issue'){roomMap[r.id].failCount++;r.issues.forEach(x=>{roomMap[r.id].issues[x.k]=(roomMap[r.id].issues[x.k]||0)+1;});}
+  }));
+  const allRooms=Object.values(roomMap);
+  const failedRooms=allRooms.filter(r=>r.failCount>0).sort((a,b)=>b.failCount-a.failCount);
+  const stableRooms=allRooms.filter(r=>r.failCount===0&&r.totalDays>0);
+  const totalFails=failedRooms.reduce((s,r)=>s+r.failCount,0);
+  const totalChecks=allRooms.reduce((s,r)=>s+r.totalDays,0);
+  const avgOKRate=totalChecks>0?Math.round((allRooms.reduce((s,r)=>s+r.okCount||0,0))/totalChecks*100):0;
+  const L='─'.repeat(50);
+  let b=`Kính gửi: Ban Quản lý VIB\n\nBáo cáo phân tích hiện trạng phòng họp\nSite: ${rSite} | Phạm vi: ${days} ngày gần nhất\nNgày xuất: ${now}\n${L}\n\nTỔNG QUAN:\n  Tỷ lệ OK trung bình: ${avgOKRate}%\n  Phòng ổn định      : ${stableRooms.length} phòng\n  Phòng có lỗi       : ${failedRooms.length} phòng\n  Tổng lần lỗi       : ${totalFails} lần\n\n`;
+  if(failedRooms.length){
+    b+=`${L}\nPHÒNG CẦN XỬ LÝ KHẨN:\n`;
+    failedRooms.slice(0,5).forEach((r,i)=>{
+      const rate=Math.round(r.failCount/r.totalDays*100);
+      b+=`\n  ${i+1}. ${r.n} (${r.site} – ${r.floor}) – Lỗi ${rate}% ngày\n`;
+      Object.entries(r.issues).sort((a,b)=>b[1]-a[1]).forEach(([k,cnt])=>{const ci=CI.find(c=>c.k===k);b+=`     ✗ ${ci?ci.l.replace(/^.{3}/,''):k}: ${cnt} lần → ${ci?ci.fix:''}\n`;});
+    });b+='\n';
+  }
+  if(stableRooms.length){
+    b+=`${L}\nPHÒNG ỔN ĐỊNH:\n  ${stableRooms.map(r=>r.n+' ('+r.site+')').join(', ')}\n\n`;
+  }
+  b+=`${L}\nKính trân trọng,\nBộ phận IT-IS-WBS – VIB\n`;
+  const sub=encodeURIComponent(`[VIB-IT] Báo cáo phân tích phòng họp – ${now}`);
+  window.open(`mailto:?subject=${sub}&body=${encodeURIComponent(b)}`,'_blank');
+}
+
+
+// ══════════════════════════════════════════════
+//  ROOM MANAGEMENT
+// ══════════════════════════════════════════════
+const KR = 'vib3_rooms';
+let ROOMS_CUSTOM = null; // null = use default
+
+function getRooms(){
+  // Luôn ưu tiên cache in-memory → localStorage → ROOMS mặc định
+  if(ROOMS_CUSTOM !== null) return ROOMS_CUSTOM;
+  try{
+    const saved = localStorage.getItem(KR);
+    if(saved){ ROOMS_CUSTOM = JSON.parse(saved); return ROOMS_CUSTOM; }
+  }catch(e){}
+  return ROOMS;
+}
+
+// Đọc danh sách phòng từ JSONBin (gọi khi load trang)
+async function syncRoomsFromCloud(){
+  const el=document.getElementById('roomSyncStatus');
+  if(el) el.textContent='⏳ Đang tải...';
+  try{
+    const r=await fetch(SB_TABLE+'?id=eq.rooms&select=data',{headers:SB_HEADERS
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const raw=await r.json();
+    let obj=raw;
+    if(raw && raw.record!==undefined) obj=raw.record;
+    const arr=Array.isArray(obj)?obj:(obj&&Array.isArray(obj.entries)?obj.entries:null);
+    if(!arr||!arr.length){
+      if(el) el.textContent='⚠️ JSONBin rỗng, giữ nguyên dữ liệu hiện tại';
+      toast('⚠️ JSONBin vib-rooms rỗng — không thay đổi!');
+      return;
+    }
+    ROOMS_CUSTOM=arr;
+    localStorage.setItem(KR,JSON.stringify(arr));
+    rebuildSiteDropdowns();
+    render();
+    renderManage();
+    if(el) el.textContent='✅ Đã tải '+arr.length+' phòng lúc '+new Date().toLocaleTimeString('vi-VN');
+    toast('✅ Đã tải '+arr.length+' phòng từ JSONBin!');
+  }catch(e){
+    if(el) el.textContent='❌ Lỗi: '+e.message;
+    toast('❌ Không tải được: '+e.message);
+    console.error(e);
+  }
+}
+async function pushRoomsToCloud(){
+  if(!confirm('Đẩy danh sách phòng hiện tại lên JSONBin? Sẽ ghi đè dữ liệu cũ trên cloud.')) return;
+  const el=document.getElementById('roomSyncStatus');
+  if(el) el.textContent='⏳ Đang đẩy lên...';
+  const arr=getRooms();
+  try{
+    const rp=await fetch(SB_TABLE+'?id=eq.rooms',{
+      method:'PATCH',
+      headers:{...SB_HEADERS,'Prefer':'return=minimal'},
+      body:JSON.stringify({data:{entries:arr},updated_at:new Date().toISOString()})
+    });
+    if(!rp.ok) throw new Error('HTTP '+rp.status);
+    if(el) el.textContent='✅ Đã đẩy '+arr.length+' phòng lúc '+new Date().toLocaleTimeString('vi-VN');
+    toast('✅ Đã đẩy '+arr.length+' phòng lên JSONBin!');
+  }catch(e){
+    if(el) el.textContent='❌ Lỗi: '+e.message;
+    toast('❌ Không đẩy được: '+e.message);
+    console.error(e);
+  }
+}
+async function loadRoomsFromCloud(){
+  try{
+    const r=await fetch(SB_TABLE+'?id=eq.rooms&select=data',{headers:SB_HEADERS
+    });
+    if(!r.ok) return;
+    const raw=await r.json();
+    let obj=raw;
+    if(raw && raw.record!==undefined) obj=raw.record;
+    const arr=Array.isArray(obj)?obj:(obj&&Array.isArray(obj.entries)?obj.entries:null);
+    if(!arr) return;
+    if(arr.length===0){ console.log('JSONBin rooms empty, dùng mặc định'); return; }
+    ROOMS_CUSTOM = arr;
+    localStorage.setItem(KR, JSON.stringify(arr));
+    rebuildSiteDropdowns();
+    render();
+    renderManage();
+    console.log('Rooms loaded from cloud:',arr.length);
+  }catch(e){
+    console.warn('loadRoomsFromCloud error:',e.message);
+  }
+}
+
+async function saveRooms(arr){
+  ROOMS_CUSTOM = arr;
+  localStorage.setItem(KR, JSON.stringify(arr));
+  rebuildSiteDropdowns();
+  // Sync lên JSONBin
+  try{
+    const rp=await fetch(SB_TABLE+'?id=eq.rooms',{
+      method:'PATCH',
+      headers:{...SB_HEADERS,'Prefer':'return=minimal'},
+      body:JSON.stringify({data:{entries:arr},updated_at:new Date().toISOString()})
+    });
+    if(rp.ok){
+      toast('✅ Đã lưu & sync danh sách phòng!');
+    } else {
+      toast('⚠️ Lưu local OK, Supabase lỗi '+rp.status);
+    }
+  }catch(e){
+    toast('⚠️ Lưu local OK, không sync được: '+e.message);
+  }
+}
+
+async function resetRoomsToDefault(){
+  if(!confirm('Khôi phục danh sách phòng về mặc định? Toàn bộ phòng đã thêm/sửa sẽ mất.')) return;
+  ROOMS_CUSTOM = null;
+  localStorage.removeItem(KR);
+  if(true){
+    try{
+      await fetch(SB_TABLE+'?id=eq.rooms',{
+        method:'PATCH',
+        headers:{...SB_HEADERS,'Prefer':'return=minimal'},
+        body:JSON.stringify({data:{entries:[]},updated_at:new Date().toISOString()})
+      });
+    }catch(e){}
+  }
+  rebuildSiteDropdowns();
+  renderManage();
+  render();
+  toast('↺ Đã khôi phục danh sách phòng mặc định');
+}
+
+function rebuildSiteDropdowns(){
+  const rooms = getRooms();
+  const sites = [...new Set(rooms.map(r=>r.site))].sort();
+  const opts = '<option value="">🏢 Tất cả Site</option>' + sites.map(s=>`<option>${s}</option>`).join('');
+  ['fSite','rSite','mgSite'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.innerHTML=opts;
+  });
+  // room modal site select
+  const rss = document.getElementById('rmSiteSelect');
+  if(rss) rss.innerHTML = '<option value="">— Chọn site có sẵn —</option>' + sites.map(s=>`<option value="${s}">${s}</option>`).join('');
+}
+
+function syncSiteInput(){
+  const sel = document.getElementById('rmSiteSelect').value;
+  if(sel) document.getElementById('rmSite').value = sel;
+}
+
+// ── Render manage table ──
+function renderManage(){
+  const rooms = getRooms();
+  const q = (document.getElementById('mgSearch')||{value:''}).value.toLowerCase().trim();
+  const site = (document.getElementById('mgSite')||{value:''}).value;
+  const city = (document.getElementById('mgCity')||{value:''}).value;
+  const fl = rooms.filter(r=>{
+    if(site && r.site!==site) return false;
+    if(city && r.city!==city) return false;
+    if(q && !r.n.toLowerCase().includes(q) && !r.site.toLowerCase().includes(q) && !r.floor.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  const el = document.getElementById('mgContent'); if(!el) return;
+  const bySite = {};
+  fl.forEach(r=>{ if(!bySite[r.site]) bySite[r.site]=[]; bySite[r.site].push(r); });
+
+  if(!fl.length){ el.innerHTML='<div style="text-align:center;padding:60px;color:var(--text3)">🔍 Không có phòng nào phù hợp</div>'; return; }
+
+  el.innerHTML = `<div class="mg-stat">Hiển thị ${fl.length}/${rooms.length} phòng · ${Object.keys(bySite).length} site</div>`
+  + Object.entries(bySite).map(([site,rs])=>`
+    <div style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 0;margin-bottom:4px">
+        <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px">${site}</span>
+        <span style="font-size:10px;color:var(--text3)">${rs[0].city==='Ha Noi'?'🏛 Hà Nội':'🏙 TP.HCM'} · ${rs.length} phòng</span>
+        <button class="btn bg bsm" style="margin-left:auto" onclick="addRoomToSite('${site}','${rs[0].city}')">＋ Thêm vào site này</button>
+      </div>
+      <div class="mg-wrap">
+        <table class="mg-table">
+          <thead><tr>
+            <th style="width:90px">Phòng</th><th style="width:70px">Tầng</th><th>Thiết bị</th><th style="width:130px">Phone / Ext</th><th style="width:80px;text-align:center">Thao tác</th>
+          </tr></thead>
+          <tbody>
+          ${rs.map(r=>{
+            const devs=[];
+            if(r.vc) devs.push(r.vc.split(' ').slice(0,3).join(' '));
+            if(r.bm) devs.push('Barco '+r.bm+(r.bs>0?' ('+r.bs+'btn)':''));
+            if(r.atv) devs.push('AppleTV');
+            if(r.tv) devs.push(r.tv);
+            const ph = r.ph?(r.ph+(r.ext?' · '+r.ext:'')):'—';
+            return `<tr>
+              <td style="white-space:nowrap"><span class="rn">${r.n}</span></td>
+              <td style="white-space:nowrap;text-align:center"><span style="font-family:var(--mono);font-size:11px;color:var(--text2)">${r.floor}</span></td>
+              <td style="line-height:1.8">${devs.map(d=>`<span class="dev-pill">${d}</span>`).join(' ')||'<span style="color:var(--text3)">—</span>'}</td>
+              <td style="white-space:nowrap"><span style="font-family:var(--mono);font-size:11px">${ph}</span></td>
+              <td style="text-align:center"><div class="mg-acts" style="justify-content:center">
+                <button class="btn bg bsm" onclick="openRoomModal(${r.id})" title="Sửa">✏️</button>
+                <button class="btn bd bsm" onclick="deleteRoom(${r.id})" title="Xóa">🗑</button>
+              </div></td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`
+  ).join('');
+}
+
+// ── Open modal ──
+let editingRoomId = null;
+function openRoomModal(id){
+  editingRoomId = id;
+  const rooms = getRooms();
+  rebuildSiteDropdowns(); // ensure site select is fresh
+  if(id === null){
+    // Add new
+    document.getElementById('rmModalTitle').textContent = '➕ Thêm phòng mới';
+    ['rmName','rmFloor','rmVc','rmTv','rmPh','rmExt','rmBm','rmAtv','rmNote'].forEach(f=>document.getElementById(f).value='');
+    document.getElementById('rmBs').value='0';
+    document.getElementById('rmCity').value='Ho Chi Minh';
+    document.getElementById('rmSiteSelect').value='';
+    document.getElementById('rmSite').value='';
+  } else {
+    const r = rooms.find(x=>x.id===id); if(!r) return;
+    document.getElementById('rmModalTitle').textContent = '✏️ Sửa phòng ' + r.n;
+    document.getElementById('rmName').value  = r.n    ||'';
+    document.getElementById('rmFloor').value = r.floor||'';
+    document.getElementById('rmCity').value  = r.city ||'Ho Chi Minh';
+    document.getElementById('rmSite').value  = r.site ||'';
+    document.getElementById('rmSiteSelect').value = r.site||'';
+    document.getElementById('rmVc').value    = r.vc   ||'';
+    document.getElementById('rmTv').value    = r.tv   ||'';
+    document.getElementById('rmPh').value    = r.ph   ||'';
+    document.getElementById('rmExt').value   = r.ext  ||'';
+    document.getElementById('rmBm').value    = r.bm   ||'';
+    document.getElementById('rmBs').value    = r.bs!==undefined?r.bs:0;
+    document.getElementById('rmAtv').value   = r.atv  ||'';
+    document.getElementById('rmNote').value  = r.note ||'';
+  }
+  document.getElementById('rmModal').classList.add('open');
+}
+function addRoomToSite(site, city){
+  openRoomModal(null);
+  document.getElementById('rmSite').value = site;
+  document.getElementById('rmSiteSelect').value = site;
+  document.getElementById('rmCity').value = city;
+}
+function closeRoomModal(){ document.getElementById('rmModal').classList.remove('open'); }
+
+// ── Save room ──
+function saveRoom(){
+  const name  = document.getElementById('rmName').value.trim();
+  const floor = document.getElementById('rmFloor').value.trim();
+  const city  = document.getElementById('rmCity').value;
+  const site  = document.getElementById('rmSite').value.trim() || document.getElementById('rmSiteSelect').value;
+  if(!name){ toast('⚠ Vui lòng nhập tên phòng!'); return; }
+  if(!floor){ toast('⚠ Vui lòng nhập tầng!'); return; }
+  if(!site){ toast('⚠ Vui lòng chọn hoặc nhập tên site!'); return; }
+
+  const rooms = [...getRooms()]; // clone
+  const entry = {
+    id:     editingRoomId !== null ? editingRoomId : (Math.max(0,...rooms.map(r=>r.id))+1),
+    n:      name,
+    floor:  floor,
+    city:   city,
+    site:   site,
+    vc:     document.getElementById('rmVc').value.trim(),
+    tv:     document.getElementById('rmTv').value.trim(),
+    ph:     document.getElementById('rmPh').value.trim(),
+    ext:    document.getElementById('rmExt').value.trim(),
+    bm:     document.getElementById('rmBm').value.trim(),
+    bs:     parseInt(document.getElementById('rmBs').value)||0,
+    atv:    document.getElementById('rmAtv').value.trim(),
+    note:   document.getElementById('rmNote').value.trim(),
+  };
+
+  if(editingRoomId !== null){
+    const idx = rooms.findIndex(r=>r.id===editingRoomId);
+    if(idx>-1) rooms[idx]=entry; else rooms.push(entry);
+    toast('✅ Đã cập nhật phòng '+name);
+  } else {
+    rooms.push(entry);
+    toast('✅ Đã thêm phòng '+name);
+  }
+  saveRooms(rooms);
+  closeRoomModal();
+  renderManage();
+  render(); // refresh checklist
+}
+
+// ── Delete room ──
+function deleteRoom(id){
+  const rooms = getRooms();
+  const r = rooms.find(x=>x.id===id);
+  if(!r) return;
+  if(!confirm(`Xóa phòng "${r.n}" (${r.site} – ${r.floor})?\nThao tác này không thể hoàn tác.`)) return;
+  const newRooms = rooms.filter(x=>x.id!==id);
+  // Also clear check data for this room
+  delete CK[id]; delete NT[id]; save();
+  saveRooms(newRooms);
+  renderManage();
+  render();
+  toast('🗑 Đã xóa phòng '+r.n);
+}
+
+// ── TABS ──
+
+function sw(tab){
+  ['check','history','report','manage'].forEach(t=>{
+    const el=document.getElementById('v-'+t);if(el)el.style.display=t===tab?'':'none';
+    const tb=document.getElementById('t-'+t);if(tb)tb.classList.toggle('on',t===tab);
+  });
+  document.getElementById('sbot').style.display=tab==='check'?'':'none';
+  // nav save btn luôn hiển thị mọi tab
+  if(tab==='history'){rHist();}
+  if(tab==='report'){renderReport();}
+  if(tab==='manage'&&typeof renderManage==='function')renderManage();
+}
+
+// ── TOAST ──
+let tt;
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2500);}
+
+// ── THEME ──
+function toggleTheme(){const l=document.body.classList.toggle('light');localStorage.setItem('vib3th',l?'light':'dark');document.getElementById('thBtn').textContent=l?'☀️':'🌙';}
+
+// ── INIT ──
+document.getElementById('navDate').textContent=new Date().toLocaleDateString('vi-VN',{weekday:'short',month:'2-digit',day:'2-digit',year:'numeric'});
+const th=localStorage.getItem('vib3th');
+if(th==='light'){document.body.classList.add('light');document.getElementById('thBtn').textContent='☀️';}
+getRooms(); // init ROOMS_CUSTOM from localStorage if saved
+const allSites=[...new Set(getRooms().map(r=>r.site))].sort();
+document.getElementById('fSite').innerHTML='<option value="">🏢 Tất cả Site</option>'+allSites.map(s=>`<option>${s}</option>`).join('');
+document.getElementById('rSite').innerHTML='<option value="">Tất cả Site</option>'+allSites.map(s=>`<option>${s}</option>`).join('');
+['eFrom','eTeam'].forEach(id=>{const el=document.getElementById(id);if(el)el.addEventListener('input',()=>{if(document.getElementById('emModal').classList.contains('open'))genEmail(curSite);});});
+document.getElementById('emModal').addEventListener('click',e=>{if(e.target===document.getElementById('emModal'))closeEmail();});
+document.getElementById('saveModal').addEventListener('click',e=>{if(e.target===document.getElementById('saveModal'))closeSave();});
+document.getElementById('rmModal').addEventListener('click',e=>{if(e.target===document.getElementById('rmModal'))closeRoomModal();});
+load();render();loadRoomsFromCloud();
+// Auto-refresh số lịch sử từ JSONBin mỗi 30 giây
+async function autoRefreshBadge(){
+  if(_sbWriting) return;
+  try{
+    const arr=await _fetchJBin();
+    if(!Array.isArray(arr))return;
+    document.getElementById('tb-hist').textContent=arr.length;
+    if(document.getElementById('v-history').style.display!=='none'){
+      renderHistFromCache(arr);
+    }
+  }catch(e){}
+}
+setInterval(autoRefreshBadge, 30000); // lịch sử mỗi 30 giây
+
+// Poll JSONBin mỗi 10 giây để sync FLOOR_CHECKED từ máy khác
+async function pollFloorSync(){
+  try{
+    if(_sbWriting) return; // skip nếu đang write
+    const hist=await _sbGet();
+
+    const dateStr=new Date().toISOString().slice(0,10);
+    const today=hist.find(h=>h._type==='daily'&&h.date===dateStr);
+
+    // Reset flag — máy khác bấm Phiên mới
+    const resetEntry=hist.find(h=>h._type==='reset'&&h.date===dateStr);
+    const lastResetTs=parseInt(localStorage.getItem('vib3_last_reset')||'0');
+    if(resetEntry&&resetEntry.ts>lastResetTs){
+      localStorage.setItem('vib3_last_reset',String(resetEntry.ts));
+      CK={};NT={};EX.clear();save();
+      FLOOR_CHECKED={};saveFC();
+      render();
+      toast('🔄 Phiên mới từ máy khác — đã reset!');
+      return;
+    }
+
+    if(!today) return;
+
+    // ── Merge CK từ rooms trên cloud ──
+    const cloudRooms=today.rooms||{};
+    let ckChanged=false;
+    Object.entries(cloudRooms).forEach(([rid,entry])=>{
+      if(!entry||!entry.checks) return;
+      const key=String(rid);
+      if(!CK[key]) CK[key]={};
+      Object.entries(entry.checks).forEach(([dev,val])=>{
+        if(!CK[key][dev]&&val){   // chỉ merge nếu local chưa có
+          CK[key][dev]=val;
+          ckChanged=true;
+        }
+      });
+    });
+    if(ckChanged){
+      save();
+      // Cập nhật UI từng phòng đã merge
+      Object.keys(cloudRooms).forEach(rid=>{
+        const el=document.getElementById('rc-'+rid);
+        if(el) refCard(rid);   // chỉ refCard nếu card đang trên màn hình
+      });
+      updSum();
+    }
+
+    // ── Merge FLOOR_CHECKED từ cloud ──
+    const cloudFloors=today.floors||{};
+    let fcChanged=false;
+    Object.entries(cloudFloors).forEach(([k,v])=>{
+      if(v&&!FLOOR_CHECKED[k]){ FLOOR_CHECKED[k]=true; fcChanged=true; }
+    });
+    if(fcChanged) saveFC();
+
+    // ── Cập nhật UI nút OK tầng ──
+    const allRooms=getRooms();
+    const floorPairs=[...new Map(allRooms.map(r=>[r.site+'|||'+r.floor,{site:r.site,floor:r.floor}])).values()];
+    floorPairs.forEach(({site,floor})=>{
+      const key=fcKey(site,floor);
+      const btn=document.getElementById('fcb-'+key);
+      if(!btn) return;
+      if(FLOOR_CHECKED[key]){
+        btn.textContent='✅ Đã lưu';
+        btn.style.cssText='padding:3px 14px;border-radius:5px;font-size:11px;font-weight:700;border:1.5px solid var(--green);background:var(--green);color:#fff;cursor:default;opacity:1;font-family:var(--sans)';
+        btn.onclick=null;
+        const hdr=document.getElementById('fhdr-'+key);
+        if(hdr) hdr.style.background='rgba(16,185,129,.08)';
+        _updateSiteBtn(site);
+      } else {
+        _refreshFloorBtn(site,floor);
+      }
+    });
+
+  }catch(e){console.warn('pollFloorSync:',e.message);}
+}
+setInterval(pollFloorSync, 10000); // mỗi 10 giây
+pollFloorSync(); // chạy ngay khi load
+</script>
+</body>
+</html>
