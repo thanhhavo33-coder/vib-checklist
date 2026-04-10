@@ -811,25 +811,26 @@ async function newSession(){
   CK={};NT={};EX.clear();save();
   FLOOR_CHECKED={};saveFC();
 
-  // 2. Xóa daily entry hôm nay trên JSONBin → máy khác poll sẽ thấy reset
+  // 2. Xóa daily entry + thêm reset flag trên JSONBin → máy khác poll thấy và reset
   const ss=document.getElementById('sbottxt');
   if(ss) ss.textContent='⏳ Đang reset JSONBin...';
   try{
     const getR=await fetch(JBIN_URL+'/latest',{headers:{'X-Master-Key':JBIN_KEY,'X-Bin-Meta':'false'}});
-    if(getR.ok){
-      const raw=await getR.json();
-      let obj=raw;if(raw&&raw.record!==undefined)obj=raw.record;
-      let hist=Array.isArray(obj)?obj:(obj&&Array.isArray(obj.entries)?obj.entries:[]);
-      // Xóa daily entry hôm nay
-      const dateStr=new Date().toISOString().slice(0,10);
-      hist=hist.filter(h=>!(h._type==='daily'&&h.date===dateStr));
-      await fetch(JBIN_URL,{
-        method:'PUT',
-        headers:{'Content-Type':'application/json','X-Master-Key':JBIN_KEY},
-        body:JSON.stringify({entries:hist})
-      });
-      localStorage.setItem(KH,JSON.stringify(hist));
-    }
+    if(!getR.ok) throw new Error('GET');
+    const raw=await getR.json();
+    let obj=raw;if(raw&&raw.record!==undefined)obj=raw.record;
+    let hist=Array.isArray(obj)?obj:(obj&&Array.isArray(obj.entries)?obj.entries:[]);
+    const dateStr=new Date().toISOString().slice(0,10);
+    // Xóa daily entry hôm nay
+    hist=hist.filter(h=>!(h._type==='daily'&&h.date===dateStr));
+    // Thêm reset flag để máy khác biết cần reset
+    hist.unshift({_type:'reset',date:dateStr,ts:Date.now()});
+    await fetch(JBIN_URL,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JBIN_KEY},
+      body:JSON.stringify({entries:hist})
+    });
+    localStorage.setItem(KH,JSON.stringify(hist));
   }catch(e){console.warn('newSession reset cloud:',e.message);}
 
   // 3. Re-render
@@ -944,7 +945,7 @@ function updSum(){
   const tf=getRooms().filter(r=>res(r)==='issue').length;
   document.getElementById('tb-fail').textContent=tf;
   document.getElementById('tb-fail').className='tbadge'+(tf>0?' warn':'');
-  document.getElementById('tb-hist').textContent=lHistLocal().length;
+  document.getElementById('tb-hist').textContent=lHistLocal().filter(h=>h._type!=='daily'&&h._type!=='reset').length;
   setTimeout(()=>{
     const rooms=getRooms();
     const pairs=[...new Map(rooms.map(r=>[r.site+'~~'+r.floor,{site:r.site,floor:r.floor||'Khác'}])).values()];
@@ -1082,14 +1083,26 @@ async function doSave(){
   btn.disabled=true;btn.textContent='Đang lưu...';
 
   try{
-    // Đọc dữ liệu hiện tại từ JSONBin
-    const hist=await lHist();
-    hist.unshift(entry);
-    if(hist.length>500)hist.pop();
+    // Đọc thẳng từ JSONBin (không qua cache)
+    const getR=await fetch(JBIN_URL+'/latest',{headers:{'X-Master-Key':JBIN_KEY,'X-Bin-Meta':'false'}});
+    if(!getR.ok) throw new Error('GET '+getR.status);
+    const raw=await getR.json();
+    let obj=raw; if(raw&&raw.record!==undefined) obj=raw.record;
+    const existing=Array.isArray(obj)?obj:(obj&&Array.isArray(obj.entries)?obj.entries:[]);
+    // Thêm entry mới (giữ nguyên daily entries)
+    existing.unshift(entry);
+    if(existing.length>500) existing.pop();
     // Ghi lên JSONBin
-    await sHist(hist);
-    // Cập nhật UI
-    document.getElementById('tb-hist').textContent=hist.length;
+    const putR=await fetch(JBIN_URL,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JBIN_KEY},
+      body:JSON.stringify({entries:existing})
+    });
+    if(!putR.ok) throw new Error('PUT '+putR.status);
+    localStorage.setItem(KH,JSON.stringify(existing));
+    // Đếm chỉ history entries (bỏ daily)
+    const histCount=existing.filter(h=>h._type!=='daily').length;
+    document.getElementById('tb-hist').textContent=histCount;
     ss.style.background='rgba(16,185,129,.08)';ss.style.border='1px solid rgba(16,185,129,.2)';
     ss.style.color='var(--green)';
     ss.innerHTML='✅ Đã lưu & đồng bộ lên JSONBin thành công!';
@@ -2001,15 +2014,26 @@ async function pollFloorSync(){
 
     const dateStr=new Date().toISOString().slice(0,10);
     const today=hist.find(h=>h._type==='daily'&&h.date===dateStr);
-    // Nếu không có daily entry hôm nay → phiên mới được tạo → reset FLOOR_CHECKED
+    // Kiểm tra reset flag — máy khác bấm Phiên mới
+    const resetEntry=hist.find(h=>h._type==='reset'&&h.date===dateStr);
+    const lastResetTs=parseInt(localStorage.getItem('vib3_last_reset')||'0');
+    if(resetEntry&&resetEntry.ts>lastResetTs){
+      localStorage.setItem('vib3_last_reset',String(resetEntry.ts));
+      if(Object.keys(FLOOR_CHECKED).length>0||Object.keys(CK).length>0){
+        CK={};NT={};EX.clear();save();
+        FLOOR_CHECKED={};saveFC();
+        render();
+        toast('🔄 Phiên mới từ máy khác — đã reset toàn bộ!');
+      }
+      return;
+    }
+    // Nếu không có daily entry hôm nay → reset nếu cần
     if(!today||!today.floors){
       if(Object.keys(FLOOR_CHECKED).length>0){
         FLOOR_CHECKED={};saveFC();
-        const rooms=getRooms();
-        const pairs=[...new Map(rooms.map(r=>[r.site+'|'+r.floor,{site:r.site,floor:r.floor}])).values()];
-        pairs.forEach(p=>_refreshFloorBtn(p.site,p.floor));
-        render();
-        toast('🔄 Phiên mới từ máy khác — đã reset!');
+        const rooms2=getRooms();
+        const pairs2=[...new Map(rooms2.map(r=>[r.site+'|'+r.floor,{site:r.site,floor:r.floor}])).values()];
+        pairs2.forEach(p=>_refreshFloorBtn(p.site,p.floor));
       }
       return;
     }
