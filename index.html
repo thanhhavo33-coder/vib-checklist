@@ -1713,10 +1713,8 @@ async function syncRoomsFromCloud(){
     const r=await fetch(SB_TABLE+'?id=eq.rooms&select=data',{headers:SB_HEADERS
     });
     if(!r.ok) throw new Error('HTTP '+r.status);
-    const raw=await r.json();
-    let obj=raw;
-    if(raw && raw.record!==undefined) obj=raw.record;
-    const arr=Array.isArray(obj)?obj:(obj&&Array.isArray(obj.entries)?obj.entries:null);
+    const rows=await r.json();
+    const arr=Array.isArray(rows)&&rows.length>0&&rows[0].data?rows[0].data.entries||null:null;
     if(!arr||!arr.length){
       if(el) el.textContent='⚠️ Cloud rỗng, giữ nguyên dữ liệu hiện tại';
       toast('⚠️ Cloud vib-rooms rỗng — không thay đổi!');
@@ -1760,12 +1758,9 @@ async function loadRoomsFromCloud(){
     const r=await fetch(SB_TABLE+'?id=eq.rooms&select=data',{headers:SB_HEADERS
     });
     if(!r.ok) return;
-    const raw=await r.json();
-    let obj=raw;
-    if(raw && raw.record!==undefined) obj=raw.record;
-    const arr=Array.isArray(obj)?obj:(obj&&Array.isArray(obj.entries)?obj.entries:null);
-    if(!arr) return;
-    if(arr.length===0){ console.log('Supabase rooms empty, dùng mặc định'); return; }
+    const rows=await r.json();
+    const arr=Array.isArray(rows)&&rows.length>0&&rows[0].data?rows[0].data.entries||null:null;
+    if(!arr||arr.length===0){ console.log('Supabase rooms empty, dùng mặc định'); return; }
     ROOMS_CUSTOM = arr;
     localStorage.setItem(KR, JSON.stringify(arr));
     rebuildSiteDropdowns();
