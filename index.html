@@ -629,7 +629,7 @@ function setC(rid,k,v){
   if(!CK[rid])CK[rid]={};CK[rid][k]=v;save();refCard(rid);updSum();
   if(v==='fail'){const nb=document.getElementById('nb-'+rid+'-'+k);if(nb)nb.classList.add('show');}
   const r=getRooms().find(x=>String(x.id)===String(rid));
-  if(r&&r.floor&&r.site) _refreshFloorBtn(r.site,r.floor);
+  if(r&&r.floor&&r.site){_refreshFloorBtn(r.site,r.floor);_updateSiteBtn(r.site);}
 }
 function setN(rid,k,v){if(!NT[rid])NT[rid]={};NT[rid][k]=v;save();}
 function roomOK(rid){
@@ -682,36 +682,38 @@ function render(){
       return na-nb;
     });
 
-    const floorHTML=floorsSorted.map(floor=>{
+    const floorHTML=floorsSorted.map(function(floor){
       const frs=byFloor[floor];
       const fokN=frs.filter(r=>res(r)==='ok').length;
       const ffailN=frs.filter(r=>res(r)==='issue').length;
-      const fstat=ffailN>0
-        ?`<span style="color:var(--red);font-size:10px;font-family:var(--mono)">⚠ ${ffailN} lỗi</span>`
-        :fokN===frs.length
-          ?`<span style="color:var(--green);font-size:10px;font-family:var(--mono)">✓ OK</span>`
-          :`<span style="color:var(--text3);font-size:10px;font-family:var(--mono)">⏳ ${frs.length-fokN-ffailN} chờ</span>`;
-      const fkey=fcKey('${site}','${floor}');
-      const fChecked=!!FLOOR_CHECKED[fkey];
-      // Kiểm tra tất cả phòng trong tầng đã có trạng thái chưa
       const fAllDone=frs.every(r=>res(r)!=='pending');
-      return `<div style="margin-bottom:4px">
-        <div id="fhdr-${fkey}" style="display:flex;align-items:center;gap:8px;padding:6px 14px;${fChecked?'background:rgba(16,185,129,.08);':'background:var(--bg2);'}border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
-          <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:${fChecked?'var(--green)':'var(--text3)'};text-transform:uppercase;letter-spacing:1px">${floor}</span>
-          <span style="font-size:10px;color:var(--text3)">${frs.length} phòng</span>
-          ${fstat}
-          <div style="margin-left:auto;display:flex;gap:5px;align-items:center">
-            <button id="fcb-${fkey}"
-              onclick="${fAllDone&&!fChecked?`toggleFloor('${site}','${floor}')`:''}"
-              style="padding:3px 12px;border-radius:5px;border:1.5px solid ${fChecked?'var(--green)':fAllDone?'var(--green)':'var(--border2)'};background:${fChecked?'var(--green)':fAllDone?'rgba(16,185,129,.1)':'var(--panel2)'};color:${fChecked?'#fff':fAllDone?'var(--green)':'var(--text3)'};font-size:11px;font-weight:700;cursor:${fAllDone&&!fChecked?'pointer':'default'};opacity:${fAllDone||fChecked?1:0.4};font-family:var(--sans);transition:all .2s"
-              title="${fChecked?'Đã lưu tầng này':fAllDone?'Bấm để lưu trạng thái tầng này':'Cần hoàn thành kiểm tra tất cả phòng trong tầng'}">
-              ${fChecked?'✅ Đã lưu':'OK'}
-            </button>
-            <button class="btn bg bsm" style="padding:2px 8px;font-size:10px" onclick="openEmail('${site}','${floor}')">📧</button>
-          </div>
-        </div>
-        <div class="rg">${frs.map(r=>buildCard(r)).join('')}</div>
-      </div>`;
+      // fkey dùng biến JS thật — site và floor đều là biến trong scope
+      const fkey=fcKey(site,floor);
+      const fChecked=!!FLOOR_CHECKED[fkey];
+      const fstat=ffailN>0
+        ?'<span style="color:var(--red);font-size:10px">⚠ '+ffailN+' lỗi</span>'
+        :fokN===frs.length
+          ?'<span style="color:var(--green);font-size:10px">✓ OK</span>'
+          :'<span style="color:var(--text3);font-size:10px">⏳ '+(frs.length-fokN-ffailN)+' chờ</span>';
+      const btnStyle='padding:3px 14px;border-radius:5px;font-size:11px;font-weight:700;font-family:var(--sans);transition:all .2s;border:1.5px solid '
+        +(fChecked?'var(--green);background:var(--green);color:#fff;cursor:default;opacity:1'
+          :fAllDone?'var(--green);background:rgba(16,185,129,.1);color:var(--green);cursor:pointer;opacity:1'
+          :'var(--border2);background:var(--panel2);color:var(--text3);cursor:default;opacity:0.4');
+      const btnOnclick=fAllDone&&!fChecked?'toggleFloor('+JSON.stringify(site)+','+JSON.stringify(floor)+')':'';
+      const btnTxt=fChecked?'✅ Đã lưu':'OK';
+      const hdrBg=fChecked?'background:rgba(16,185,129,.08)':'background:var(--bg2)';
+      return '<div style="margin-bottom:4px">'
+        +'<div id="fhdr-'+fkey+'" style="display:flex;align-items:center;gap:8px;padding:6px 14px;'+hdrBg+';border-top:1px solid var(--border);border-bottom:1px solid var(--border)">'
+        +'<span style="font-family:var(--mono);font-size:10px;font-weight:700;color:'+(fChecked?'var(--green)':'var(--text3)')+';text-transform:uppercase;letter-spacing:1px">'+floor+'</span>'
+        +'<span style="font-size:10px;color:var(--text3)">'+frs.length+' phòng</span>'
+        +fstat
+        +'<div style="margin-left:auto;display:flex;gap:5px;align-items:center">'
+        +'<button id="fcb-'+fkey+'" onclick="'+btnOnclick+'" style="'+btnStyle+'" title="'+(fChecked?'Đã lưu':fAllDone?'Bấm để lưu tầng này':'Hoàn thành kiểm tra tất cả phòng trước')+'">'+btnTxt+'</button>'
+        +'<button class="btn bg bsm" style="padding:2px 8px;font-size:10px" onclick="openEmail('+JSON.stringify(site)+','+JSON.stringify(floor)+')">📧</button>'
+        +'</div>'
+        +'</div>'
+        +'<div class="rg">'+frs.map(r=>buildCard(r)).join('')+'</div>'
+        +'</div>';
     }).join('');
 
     return `<div class="ss">
@@ -722,7 +724,7 @@ function render(){
           <span style="color:var(--green)">${okN}✓</span>${failN?`<span style="color:var(--red)">${failN}✗</span>`:''}
           <span style="color:var(--text3)">${rs.length-done}⏳</span>${warn}</div>
         <div class="sha">
-          <button class="btn bg bsm" id="sokbtn-${site}" onclick="markSite('${site}')" style="${floorsSorted.every(fl=>FLOOR_CHECKED[fcKey('${site}',fl)])?'background:var(--green);color:#fff;border-color:var(--green)':'background:var(--red);color:#fff;border-color:var(--red)'}">${floorsSorted.every(fl=>FLOOR_CHECKED[fcKey('${site}',fl)])?'✅ OK Site':'🔴 '+floorsSorted.filter(fl=>FLOOR_CHECKED[fcKey('${site}',fl)]).length+'/'+floorsSorted.length+' tầng'}</button>
+          <button class="btn bg bsm" id="sokbtn-${site}" onclick="markSite('${site}')">✅ OK Site</button>
           <button class="btn bp bsm" onclick="openEmail('${site}')">📧 Báo cáo Site</button>
         </div>
       </div>
@@ -797,7 +799,7 @@ function refCard(rid){
   body.innerHTML=newBar+rows;
   const nb=document.getElementById('bok-'+rid);if(nb){nb.disabled=allOK;nb.textContent=allOK?'✅ Đã OK tất cả':'✅ Chọn tất cả OK';}
   // Cập nhật nút OK tầng nếu tầng đã đủ điều kiện
-  if(r.floor&&r.site) _refreshFloorBtn(r.site,r.floor);
+  if(r&&r.floor&&r.site){_refreshFloorBtn(r.site,r.floor);_updateSiteBtn(r.site);}
 }
 function resetAll(){if(!confirm('Reset toàn bộ hôm nay?'))return;CK={};NT={};EX.clear();save();render();toast('↺ Đã reset');}
 
@@ -841,7 +843,7 @@ async function toggleFloor(site,floor){
       body:JSON.stringify({entries:hist})});
     localStorage.setItem(KH,JSON.stringify(hist));
     // Cập nhật UI thành công
-    if(btn){btn.textContent='✅ Đã lưu';btn.style.background='var(--green)';btn.style.color='#fff';btn.style.borderColor='var(--green)';btn.style.opacity='1';}
+    _refreshFloorBtn(site,floor);
     _updateSiteBtn(site);
     toast('✅ Tầng '+floor+' — '+site+' đã lưu!');
   }catch(e){
@@ -851,45 +853,46 @@ async function toggleFloor(site,floor){
     console.error(e);
   }
 }
+
+
 function _refreshFloorBtn(site,floor){
   const key=fcKey(site,floor);
-  if(FLOOR_CHECKED[key]) return;
-  const frs=getRooms().filter(r=>r.site===site&&r.floor===floor);
-  if(!frs.length) return;
-  const allDone=frs.length>0&&frs.every(r=>res(r)!=='pending');
   const btn=document.getElementById('fcb-'+key);
-  if(!btn) return;
-  if(allDone){
-    btn.style.borderColor='var(--green)';
-    btn.style.background='rgba(16,185,129,.1)';
-    btn.style.color='var(--green)';
-    btn.style.opacity='1';
-    btn.style.cursor='pointer';
-    btn.textContent='OK';
-    btn.onclick=()=>toggleFloor(site,floor);
-    btn.title='Bấm để lưu trạng thái tầng này';
-  } else {
-    btn.style.borderColor='var(--border2)';
-    btn.style.background='var(--panel2)';
-    btn.style.color='var(--text3)';
-    btn.style.opacity='0.4';
-    btn.style.cursor='default';
-    btn.textContent='OK';
+  if(!btn)return;
+  if(FLOOR_CHECKED[key]){
+    btn.textContent='✅ Đã lưu';
+    btn.style.cssText='padding:3px 14px;border-radius:5px;font-size:11px;font-weight:700;border:1.5px solid var(--green);background:var(--green);color:#fff;cursor:default;opacity:1;font-family:var(--sans)';
     btn.onclick=null;
-    btn.title='Cần hoàn thành kiểm tra tất cả phòng trong tầng';
+    const hdr=document.getElementById('fhdr-'+key);
+    if(hdr)hdr.style.background='rgba(16,185,129,.08)';
+    return;
+  }
+  const frs=getRooms().filter(r=>r.site===site&&r.floor===floor);
+  const allDone=frs.length>0&&frs.every(r=>res(r)!=='pending');
+  btn.textContent='OK';
+  if(allDone){
+    btn.style.cssText='padding:3px 14px;border-radius:5px;font-size:11px;font-weight:700;border:1.5px solid var(--green);background:rgba(16,185,129,.1);color:var(--green);cursor:pointer;opacity:1;font-family:var(--sans)';
+    btn.onclick=function(){toggleFloor(site,floor);};
+    btn.title='Bấm để lưu trạng thái tầng này lên JSONBin';
+  }else{
+    btn.style.cssText='padding:3px 14px;border-radius:5px;font-size:11px;font-weight:700;border:1.5px solid var(--border2);background:var(--panel2);color:var(--text3);cursor:default;opacity:0.4;font-family:var(--sans)';
+    btn.onclick=null;
+    btn.title='Cần có trạng thái cho tất cả phòng trong tầng này';
   }
 }
 function _updateSiteBtn(site){
   const btn=document.getElementById('sokbtn-'+site);
   if(!btn)return;
-  const siteRooms=getRooms().filter(r=>r.site===site);
-  const floors=[...new Set(siteRooms.map(r=>r.floor||'Khác'))];
-  const checkedCount=floors.filter(fl=>FLOOR_CHECKED[fcKey(site,fl)]).length;
-  const allDone=checkedCount===floors.length&&floors.length>0;
-  btn.style.background=allDone?'var(--green)':'var(--red)';
-  btn.style.color='#fff';
-  btn.style.borderColor=allDone?'var(--green)':'var(--red)';
-  btn.textContent=allDone?'✅ OK Site':'🔴 '+checkedCount+'/'+floors.length+' tầng';
+  const siteFloors=[...new Set(getRooms().filter(r=>r.site===site).map(r=>r.floor||'Khác'))];
+  const done=siteFloors.filter(fl=>FLOOR_CHECKED[fcKey(site,fl)]).length;
+  const all=siteFloors.length;
+  if(done===all&&all>0){
+    btn.style.cssText='background:var(--green);color:#fff;border-color:var(--green)';
+    btn.textContent='✅ OK Site';
+  }else{
+    btn.style.cssText='background:var(--red);color:#fff;border-color:var(--red)';
+    btn.textContent='🔴 '+done+'/'+all+' tầng';
+  }
 }
 function updSum(){
   const fl=filtered();
@@ -908,6 +911,13 @@ function updSum(){
   document.getElementById('tb-fail').textContent=tf;
   document.getElementById('tb-fail').className='tbadge'+(tf>0?' warn':'');
   document.getElementById('tb-hist').textContent=lHistLocal().length;
+  setTimeout(()=>{
+    const rooms=getRooms();
+    const pairs=[...new Map(rooms.map(r=>[r.site+'~~'+r.floor,{site:r.site,floor:r.floor||'Khác'}])).values()];
+    pairs.forEach(p=>{_refreshFloorBtn(p.site,p.floor);});
+    const sites=[...new Set(rooms.map(r=>r.site))];
+    sites.forEach(s=>_updateSiteBtn(s));
+  },30);
 }
 function expandAll(){const fl=filtered();if(EX.size>=fl.length){EX.clear();}else{fl.forEach(r=>EX.add(r.id));}render();}
 function markAllVis(){
