@@ -589,10 +589,10 @@ async function _sbGet(){
 }
 
 async function _sbPut(arr){
-  const r=await fetch(SB_TABLE+'?id=eq.main',{
-    method:'PATCH',
-    headers:{...SB_HEADERS,'Prefer':'return=minimal'},
-    body:JSON.stringify({data:{entries:arr},updated_at:new Date().toISOString()})
+  const r=await fetch(SB_TABLE,{
+    method:'POST',
+    headers:{...SB_HEADERS,'Prefer':'resolution=merge-duplicates,return=minimal'},
+    body:JSON.stringify({id:'main',data:{entries:arr},updated_at:new Date().toISOString()})
   });
   if(!r.ok){const t=await r.text().catch(()=>'');throw new Error('SB PUT '+r.status+': '+t);}
   localStorage.setItem(KH,JSON.stringify(arr));
@@ -1741,10 +1741,10 @@ async function pushRoomsToCloud(){
   if(el) el.textContent='⏳ Đang đẩy lên...';
   const arr=getRooms();
   try{
-    const rp=await fetch(SB_TABLE+'?id=eq.rooms',{
-      method:'PATCH',
-      headers:{...SB_HEADERS,'Prefer':'return=minimal'},
-      body:JSON.stringify({data:{entries:arr},updated_at:new Date().toISOString()})
+    const rp=await fetch(SB_TABLE,{
+      method:'POST',
+      headers:{...SB_HEADERS,'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify({id:'rooms',data:{entries:arr},updated_at:new Date().toISOString()})
     });
     if(!rp.ok) throw new Error('HTTP '+rp.status);
     if(el) el.textContent='✅ Đã đẩy '+arr.length+' phòng lúc '+new Date().toLocaleTimeString('vi-VN');
@@ -1781,17 +1781,30 @@ async function saveRooms(arr){
   ROOMS_CUSTOM = arr;
   localStorage.setItem(KR, JSON.stringify(arr));
   rebuildSiteDropdowns();
-  // Sync lên Supabase
   try{
+    // Dùng PATCH với upsert để tạo nếu chưa có, cập nhật nếu đã có
     const rp=await fetch(SB_TABLE+'?id=eq.rooms',{
       method:'PATCH',
       headers:{...SB_HEADERS,'Prefer':'return=minimal'},
       body:JSON.stringify({data:{entries:arr},updated_at:new Date().toISOString()})
     });
+    if(rp.ok && rp.status!==204){
+      // Nếu không có row nào được update (204 No Content với 0 rows), thì INSERT
+    }
+    // Nếu PATCH trả 0 rows, thử INSERT
+    const count=rp.headers.get('content-range');
+    if(rp.ok && count==='*'){
+      await fetch(SB_TABLE,{
+        method:'POST',
+        headers:{...SB_HEADERS,'Prefer':'resolution=merge-duplicates,return=minimal'},
+        body:JSON.stringify({id:'rooms',data:{entries:arr},updated_at:new Date().toISOString()})
+      });
+    }
     if(rp.ok){
       toast('✅ Đã lưu & sync danh sách phòng!');
     } else {
-      toast('⚠️ Lưu local OK, Supabase lỗi '+rp.status);
+      const t=await rp.text().catch(()=>'');
+      toast('⚠️ Lưu local OK, Supabase lỗi '+rp.status+': '+t);
     }
   }catch(e){
     toast('⚠️ Lưu local OK, không sync được: '+e.message);
@@ -1804,10 +1817,10 @@ async function resetRoomsToDefault(){
   localStorage.removeItem(KR);
   if(true){
     try{
-      await fetch(SB_TABLE+'?id=eq.rooms',{
-        method:'PATCH',
-        headers:{...SB_HEADERS,'Prefer':'return=minimal'},
-        body:JSON.stringify({data:{entries:[]},updated_at:new Date().toISOString()})
+      await fetch(SB_TABLE,{
+        method:'POST',
+        headers:{...SB_HEADERS,'Prefer':'resolution=merge-duplicates,return=minimal'},
+        body:JSON.stringify({id:'rooms',data:{entries:[]},updated_at:new Date().toISOString()})
       });
     }catch(e){}
   }
@@ -1999,7 +2012,7 @@ function sw(tab){
   // nav save btn luôn hiển thị mọi tab
   if(tab==='history'){rHist();}
   if(tab==='report'){renderReport();}
-  if(tab==='manage'&&typeof renderManage==='function')renderManage();
+  if(tab==='manage'&&typeof renderManage==='function'){syncRoomsFromCloud().then(()=>renderManage());}
 }
 
 // ── TOAST ──
@@ -2059,7 +2072,7 @@ async function pollFloorSync(){
 
     if(!today) return;
 
-    // ── Merge CK từ rooms trên cloud ──
+    // ── Merge CK từ rooms trên cloud (2 chiều) ──
     const cloudRooms=today.rooms||{};
     let ckChanged=false;
     Object.entries(cloudRooms).forEach(([rid,entry])=>{
@@ -2067,7 +2080,10 @@ async function pollFloorSync(){
       const key=String(rid);
       if(!CK[key]) CK[key]={};
       Object.entries(entry.checks).forEach(([dev,val])=>{
-        if(val && CK[key][dev]!==val){ // merge nếu cloud có giá trị và khác local
+        // Luôn lấy giá trị cloud nếu:
+        // 1. Local chưa có, HOẶC
+        // 2. Local đang pending (chưa check) nhưng cloud đã có
+        if(val && !CK[key][dev]){
           CK[key][dev]=val;
           ckChanged=true;
         }
