@@ -1934,14 +1934,22 @@ function openRoomModal(id){
 }
 function addRoomToSite(site, city){
   openRoomModal(null);
+  // Tự điền Site, Khu vực
   document.getElementById('rmSite').value = site;
   document.getElementById('rmSiteSelect').value = site;
   document.getElementById('rmCity').value = city;
+  // Gợi ý tầng từ phòng cuối cùng trong site
+  const siteRooms=getRooms().filter(r=>r.site===site);
+  if(siteRooms.length>0){
+    const lastFloor=siteRooms[siteRooms.length-1].floor||'';
+    document.getElementById('rmFloor').value=lastFloor;
+    document.getElementById('rmFloor').placeholder='VD: '+lastFloor+' (tự điền từ site)';
+  }
 }
 function closeRoomModal(){ document.getElementById('rmModal').classList.remove('open'); }
 
 // ── Save room ──
-function saveRoom(){
+async function saveRoom(){
   const name  = document.getElementById('rmName').value.trim();
   const floor = document.getElementById('rmFloor').value.trim();
   const city  = document.getElementById('rmCity').value;
@@ -1950,13 +1958,10 @@ function saveRoom(){
   if(!floor){ toast('⚠ Vui lòng nhập tầng!'); return; }
   if(!site){ toast('⚠ Vui lòng chọn hoặc nhập tên site!'); return; }
 
-  const rooms = [...getRooms()]; // clone
+  const rooms = [...getRooms()];
   const entry = {
     id:     editingRoomId !== null ? editingRoomId : (Math.max(0,...rooms.map(r=>r.id))+1),
-    n:      name,
-    floor:  floor,
-    city:   city,
-    site:   site,
+    n:      name, floor, city, site,
     vc:     document.getElementById('rmVc').value.trim(),
     tv:     document.getElementById('rmTv').value.trim(),
     ph:     document.getElementById('rmPh').value.trim(),
@@ -1970,15 +1975,18 @@ function saveRoom(){
   if(editingRoomId !== null){
     const idx = rooms.findIndex(r=>r.id===editingRoomId);
     if(idx>-1) rooms[idx]=entry; else rooms.push(entry);
-    toast('✅ Đã cập nhật phòng '+name);
   } else {
     rooms.push(entry);
-    toast('✅ Đã thêm phòng '+name);
   }
-  saveRooms(rooms);
+
+  // Lưu button loading
+  const saveBtn=document.querySelector('#rmModal .btn.bs');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='⏳ Đang lưu...';}
+
+  await saveRooms(rooms); // sync Supabase
   closeRoomModal();
   renderManage();
-  render(); // refresh checklist
+  render();
 }
 
 // ── Delete room ──
