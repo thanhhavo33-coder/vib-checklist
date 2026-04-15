@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VIB — Kiểm tra phòng họp</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline'; connect-src 'self' https://api.jsonbin.io https://fonts.googleapis.com https://fonts.gstatic.com; font-src https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0c10;--bg2:#0f1117;--panel:#141720;--panel2:#1a1f2e;--border:#232840;--border2:#2e3550;--accent:#3b82f6;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--orange:#f97316;--purple:#8b5cf6;--text:#e2e8f0;--text2:#94a3b8;--text3:#4a5568;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans Thai',sans-serif;--r:8px;--sh:0 4px 24px rgba(0,0,0,.4)}
@@ -302,8 +303,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 <!-- HISTORY VIEW -->
 <div id="v-history" style="display:none">
   <div style="padding:10px 20px 0;display:flex;align-items:center;gap:10px">
-    <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">☁️ Dữ liệu dùng chung qua Supabase</span>
-    <button class="btn bg bsm" onclick="rHist()" style="margin-left:auto">🔄 Tải lại</button>
+    <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">☁️ Dữ liệu dùng chung qua JSONBin</span>
+    <button class="btn bg bsm" onclick="rHist()" style="margin-left:auto">🔄 Tải lại từ JSONBin</button>
   </div>
   <div class="hw" id="hc"></div>
 </div>
@@ -339,10 +340,10 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 <!-- MANAGE VIEW -->
 <div id="v-manage" style="display:none">
   <div style="padding:8px 20px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:11px;flex-wrap:wrap">
-    <span style="color:var(--text3);font-family:var(--mono)">☁️ Sync qua Supabase</span>
+    <span style="color:var(--text3);font-family:var(--mono)">☁️ Sync qua JSONBin — vib-rooms</span>
     <span id="roomSyncStatus" style="color:var(--text3);font-family:var(--mono)"></span>
-    <button class="btn bg bsm" onclick="syncRoomsFromCloud()" style="border-color:var(--accent);color:var(--accent)">🔄 Tải từ Cloud</button>
-    <button class="btn bg bsm" onclick="pushRoomsToCloud()" style="border-color:var(--green);color:var(--green)">☁️ Đẩy lên Cloud</button>
+    <button class="btn bg bsm" onclick="syncRoomsFromCloud()" style="border-color:var(--accent);color:var(--accent)">🔄 Tải từ JSONBin</button>
+    <button class="btn bg bsm" onclick="pushRoomsToCloud()" style="border-color:var(--green);color:var(--green)">☁️ Đẩy lên JSONBin</button>
   </div>
   <div style="padding:10px 20px;background:var(--panel2);border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap">
     <input class="finput" id="mgSearch" placeholder="🔍 Tìm phòng, site..." oninput="renderManage()" style="width:220px">
@@ -540,11 +541,11 @@ function ap(r,k){
 const TODAY=new Date().toISOString().slice(0,10);
 const KT='vib3_'+TODAY, KH='vib3_hist';
 // ── JSONBin config ──
-// ── Supabase config ──
-const SB_URL='https://ekdssjlfayjawbfjyhlj.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrZHNzamxmYXlqYXdiZmp5aGxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4MDE4NzMsImV4cCI6MjA5MTM3Nzg3M30.Eqd-6wNow_t1JVSmY3QLNPccZ_dSMwMP5KzbilF9-qQ';
-const SB_HEADERS={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
-const SB_TABLE=SB_URL+'/rest/v1/checklist_data';
+const JBIN_KEY='$2a$10$cxRAihM8MP6wwtwKeHLTO.OUOCIG/jRGKsiLHEkWiL1GV.GJhgUr2';
+const JBIN_ID='69d3986d36566621a8834c5b';      // Bin lịch sử checklist
+const JBIN_URL='https://api.jsonbin.io/v3/b/'+JBIN_ID;
+const JROOM_ID='69d45ba7856a682189074696';             // Bin danh sách phòng
+const JROOM_URL='https://api.jsonbin.io/v3/b/'+JROOM_ID;
 // Bin trạng thái kiểm tra hôm nay (dùng chung cùng Bin checklist, key theo ngày)
 let CK={},NT={},EX=new Set(),curSite='ALL',curFloor=null;
 // Tick tầng: key = "site||floor", value = true
@@ -561,73 +562,73 @@ function fcKey(site,floor){return (site+'__'+floor).replace(/[^a-zA-Z0-9_\-]/g,'
 function save(){localStorage.setItem(KT,JSON.stringify({CK,NT}));}
 function load(){try{const d=JSON.parse(localStorage.getItem(KT)||'{}');CK=d.CK||{};NT=d.NT||{};}catch(e){}}
 
-// ── Lưu trạng thái 1 phòng lên Supabase ──
+// ── Lưu trạng thái 1 phòng lên JSONBin ──
 // Bin riêng cho trạng thái hôm nay: dùng Bin lịch sử, lưu sub-key
-// Thực tế: lưu vào localStorage key JTODAY + sync lên Supabase dạng {today:{rid:{...}}}
+// Thực tế: lưu vào localStorage key JTODAY + sync lên JSONBin dạng {today:{rid:{...}}}
 
 
 
 
-// Load trạng thái đã lưu hôm nay từ Supabase
+// Load trạng thái đã lưu hôm nay từ JSONBin
 
 
 
 
 // ── History: đọc/ghi JSONBin (shared) + localStorage (cache) ──
 // ── Write lock tránh race condition ──
-// ── Supabase helpers ──
-let _sbWriting=false;
-
-async function _sbGet(){
-  const r=await fetch(SB_TABLE+'?id=eq.main&select=data',{headers:SB_HEADERS});
-  if(!r.ok) throw new Error('SB GET '+r.status);
-  const rows=await r.json();
-  if(!rows.length) throw new Error('No data row');
-  const arr=rows[0].data.entries||[];
+// ── JSONBin helpers với retry chống race condition ──
+async function _fetchJBin(){
+  const r=await fetch(JBIN_URL+'/latest',{headers:{'X-Master-Key':JBIN_KEY,'X-Bin-Meta':'false'}});
+  if(!r.ok) throw new Error('GET '+r.status);
+  const raw=await r.json();
+  let obj=raw;
+  if(raw&&raw.record!==undefined) obj=raw.record;
+  const arr=Array.isArray(obj)?obj:(obj&&Array.isArray(obj.entries)?obj.entries:[]);
   localStorage.setItem(KH,JSON.stringify(arr));
   return arr;
 }
 
-async function _sbPut(arr){
-  const r=await fetch(SB_TABLE,{
-    method:'POST',
-    headers:{...SB_HEADERS,'Prefer':'resolution=merge-duplicates,return=minimal'},
-    body:JSON.stringify({id:'main',data:{entries:arr},updated_at:new Date().toISOString()})
-  });
-  if(!r.ok){const t=await r.text().catch(()=>'');throw new Error('SB PUT '+r.status+': '+t);}
-  localStorage.setItem(KH,JSON.stringify(arr));
-  return arr;
-}
-
-// Ghi an toàn: GET → merge → PATCH, retry với backoff
+// Hàm ghi an toàn: GET → merge → PUT, retry với backoff
 async function _safeWrite(mergeFn, maxRetry=4){
   for(let i=0;i<maxRetry;i++){
     try{
-      _sbWriting=true;
-      const current=await _sbGet();
+      const current=await _fetchJBin();
       const merged=mergeFn(current);
-      await _sbPut(merged);
-      _sbWriting=false;
+      const putR=await fetch(JBIN_URL,{
+        method:'PUT',
+        headers:{
+          'Content-Type':'application/json',
+          'X-Master-Key':JBIN_KEY
+        },
+        body:JSON.stringify({entries:merged})
+      });
+      if(!putR.ok){
+        const t=await putR.text().catch(()=>'');
+        throw new Error('PUT '+putR.status+': '+t);
+      }
+      localStorage.setItem(KH,JSON.stringify(merged));
       return merged;
     }catch(e){
-      _sbWriting=false;
       if(i===maxRetry-1) throw e;
-      await new Promise(res=>setTimeout(res,800*(i+1)+Math.random()*800));
+      await new Promise(res=>setTimeout(res,1000*(i+1)+Math.random()*1000));
     }
   }
 }
 
 async function lHist(){
-  try{ return await _sbGet(); }
-  catch(e){ console.warn('lHist fallback local:',e.message); return lHistLocal(); }
+  try{ return await _fetchJBin(); }
+  catch(e){ console.warn('lHist fallback:',e.message); return lHistLocal(); }
 }
-async function sHist(arr){ return _safeWrite(()=>arr); }
+async function sHist(arr){
+  // sHist cũ — dùng _safeWrite để đảm bảo merge đúng
+  return _safeWrite(()=>arr);
+}
 function lHistLocal(){try{return JSON.parse(localStorage.getItem(KH)||'[]');}catch(e){return[];}}
 
 // Lấy CK tổng hợp: merge CK local + rooms đã sync từ tất cả máy (daily entry JSONBin)
 async function getMergedCK(){
   try{
-    const hist=await _sbGet();
+    const hist=await _fetchJBin();
     const dateStr=new Date().toISOString().slice(0,10);
     const daily=hist.find(h=>h._type==='daily'&&h.date===dateStr);
     if(!daily||!daily.rooms) return CK;
@@ -852,7 +853,7 @@ function refCard(rid){
 function resetAll(){if(!confirm('Reset toàn bộ hôm nay?'))return;CK={};NT={};EX.clear();save();render();toast('↺ Đã reset');}
 
 async function newSession(){
-  if(!confirm('Bắt đầu phiên kiểm tra mới?\n\n• Xóa toàn bộ trạng thái tick phòng hôm nay\n• Xóa trạng thái OK tầng trên Cloud\n• Dữ liệu lịch sử các ngày trước KHÔNG bị xóa'))return;
+  if(!confirm('Bắt đầu phiên kiểm tra mới?\n\n• Xóa toàn bộ trạng thái tick phòng hôm nay\n• Xóa trạng thái OK tầng trên JSONBin\n• Dữ liệu lịch sử các ngày trước KHÔNG bị xóa'))return;
 
   // 1. Reset local state
   CK={};NT={};EX.clear();save();
@@ -860,7 +861,7 @@ async function newSession(){
 
   // 2. Xóa daily entry + thêm reset flag trên JSONBin → máy khác poll thấy và reset
   const ss=document.getElementById('sbottxt');
-  if(ss) ss.textContent='⏳ Đang reset Cloud...';
+  if(ss) ss.textContent='⏳ Đang reset JSONBin...';
   try{
     const resetTs=Date.now();
     await _safeWrite(current=>{
@@ -890,13 +891,12 @@ async function toggleFloor(site,floor){
   const hdrEl=document.getElementById('fhdr-'+key);
   if(hdrEl) hdrEl.style.background='rgba(16,185,129,.08)';
 
-  // Sync lên Supabase dùng _safeWrite chống race condition
+  // Sync lên JSONBin dùng _safeWrite chống race condition
   const floorRooms=getRooms().filter(r=>r.site===site&&r.floor===floor);
   const roomSnap={};
   floorRooms.forEach(r=>{
     roomSnap[String(r.id)]={
       rid:String(r.id),n:r.n,site:r.site,floor:r.floor,result:res(r),
-      checks:{...(CK[String(r.id)]||CK[r.id]||{})}, // lưu toàn bộ CK để máy khác merge
       issues:CI.filter(ci=>ap(r,ci.k)&&(CK[r.id]||{})[ci.k]==='fail')
         .map(ci=>({k:ci.k,l:ci.l,note:(NT[r.id]||{})[ci.k]||''})),
       savedAt:new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})
@@ -944,7 +944,7 @@ function _refreshFloorBtn(site,floor){
   if(allDone){
     btn.style.cssText='padding:3px 14px;border-radius:5px;font-size:11px;font-weight:700;border:1.5px solid var(--green);background:rgba(16,185,129,.1);color:var(--green);cursor:pointer;opacity:1;font-family:var(--sans)';
     btn.onclick=function(){toggleFloor(site,floor);};
-    btn.title='Bấm để lưu trạng thái tầng này lên Cloud';
+    btn.title='Bấm để lưu trạng thái tầng này lên JSONBin';
   }else{
     btn.style.cssText='padding:3px 14px;border-radius:5px;font-size:11px;font-weight:700;border:1.5px solid var(--border2);background:var(--panel2);color:var(--text3);cursor:default;opacity:0.4;font-family:var(--sans)';
     btn.onclick=null;
@@ -1130,7 +1130,7 @@ async function doSave(){
   // UI loading
   ss.style.display='flex';ss.style.background='rgba(59,130,246,.08)';
   ss.style.border='1px solid rgba(59,130,246,.2)';ss.style.color='var(--text2)';
-  ss.innerHTML='<span style="animation:spin 1s linear infinite;display:inline-block">⏳</span>&nbsp;Đang đồng bộ lên Supabase...';
+  ss.innerHTML='<span style="animation:spin 1s linear infinite;display:inline-block">⏳</span>&nbsp;Đang đồng bộ lên JSONBin...';
   btn.disabled=true;btn.textContent='Đang lưu...';
 
   try{
@@ -1144,7 +1144,7 @@ async function doSave(){
     document.getElementById('tb-hist').textContent=histCount;
     ss.style.background='rgba(16,185,129,.08)';ss.style.border='1px solid rgba(16,185,129,.2)';
     ss.style.color='var(--green)';
-    ss.innerHTML='✅ ✅ Đã lưu & đồng bộ thành công!';
+    ss.innerHTML='✅ Đã lưu & đồng bộ lên JSONBin thành công!';
     btn.textContent='✅ Đã xong';
     // Reset floor checked sau khi lưu lịch sử
     FLOOR_CHECKED={};saveFC();
@@ -1153,7 +1153,7 @@ async function doSave(){
     if(document.getElementById('v-report').style.display!=='none')renderReport();
     setTimeout(()=>{closeSave();btn.disabled=false;btn.textContent='💾 Lưu & Đồng bộ';},1200);
   }catch(err){
-    // Fallback: lưu local nếu Supabase lỗi
+    // Fallback: lưu local nếu JSONBin lỗi
     const localHist=lHistLocal();
     localHist.unshift(entry);
     if(localHist.length>500)localHist.pop();
@@ -1161,10 +1161,10 @@ async function doSave(){
     document.getElementById('tb-hist').textContent=localHist.length;
     ss.style.background='rgba(245,158,11,.08)';ss.style.border='1px solid rgba(245,158,11,.25)';
     ss.style.color='var(--yellow)';
-    ss.innerHTML='⚠️ Supabase lỗi — đã lưu cục bộ trên máy này. Kiểm tra kết nối mạng.';
+    ss.innerHTML='⚠️ JSONBin lỗi — đã lưu cục bộ trên máy này. Kiểm tra kết nối mạng.';
     btn.disabled=false;btn.textContent='💾 Lưu & Đồng bộ';
-    toast('⚠️ Lưu cục bộ OK. Supabase chưa sync!');
-    console.error('Supabase error:',err);
+    toast('⚠️ Lưu cục bộ OK. JSONBin chưa sync!');
+    console.error('JSONBin error:',err);
   }
 }
 function renderHistFromCache(hist){
@@ -1177,7 +1177,7 @@ function renderHistFromCache(hist){
 }
 async function rHist(){
   const el=document.getElementById('hc');
-  el.innerHTML='<div class="hempty"><span style="animation:spin 1s linear infinite;display:inline-block;font-size:20px">⏳</span><br>Đang tải lịch sử từ Supabase...</div>';
+  el.innerHTML='<div class="hempty"><span style="animation:spin 1s linear infinite;display:inline-block;font-size:20px">⏳</span><br>Đang tải lịch sử từ JSONBin...</div>';
   const hist=await lHist();
   _renderHistHTML(el, hist);
 }
@@ -1705,19 +1705,22 @@ function getRooms(){
   return ROOMS;
 }
 
-// Đọc danh sách phòng từ Supabase (gọi khi load trang)
+// Đọc danh sách phòng từ JSONBin (gọi khi load trang)
 async function syncRoomsFromCloud(){
   const el=document.getElementById('roomSyncStatus');
   if(el) el.textContent='⏳ Đang tải...';
   try{
-    const r=await fetch(SB_TABLE+'?id=eq.rooms&select=data',{headers:SB_HEADERS
+    const r=await fetch(JROOM_URL+'/latest',{
+      headers:{'X-Master-Key':JBIN_KEY,'X-Bin-Meta':'false'}
     });
     if(!r.ok) throw new Error('HTTP '+r.status);
-    const rows=await r.json();
-    const arr=Array.isArray(rows)&&rows.length>0&&rows[0].data?rows[0].data.entries||null:null;
+    const raw=await r.json();
+    let obj=raw;
+    if(raw && raw.record!==undefined) obj=raw.record;
+    const arr=Array.isArray(obj)?obj:(obj&&Array.isArray(obj.entries)?obj.entries:null);
     if(!arr||!arr.length){
-      if(el) el.textContent='⚠️ Cloud rỗng, giữ nguyên dữ liệu hiện tại';
-      toast('⚠️ Cloud vib-rooms rỗng — không thay đổi!');
+      if(el) el.textContent='⚠️ JSONBin rỗng, giữ nguyên dữ liệu hiện tại';
+      toast('⚠️ JSONBin vib-rooms rỗng — không thay đổi!');
       return;
     }
     ROOMS_CUSTOM=arr;
@@ -1726,7 +1729,7 @@ async function syncRoomsFromCloud(){
     render();
     renderManage();
     if(el) el.textContent='✅ Đã tải '+arr.length+' phòng lúc '+new Date().toLocaleTimeString('vi-VN');
-    toast('✅ Đã tải '+arr.length+' phòng từ Supabase!');
+    toast('✅ Đã tải '+arr.length+' phòng từ JSONBin!');
   }catch(e){
     if(el) el.textContent='❌ Lỗi: '+e.message;
     toast('❌ Không tải được: '+e.message);
@@ -1734,19 +1737,19 @@ async function syncRoomsFromCloud(){
   }
 }
 async function pushRoomsToCloud(){
-  if(!confirm('Đẩy danh sách phòng hiện tại lên Supabase? Sẽ ghi đè dữ liệu cũ trên cloud.')) return;
+  if(!confirm('Đẩy danh sách phòng hiện tại lên JSONBin? Sẽ ghi đè dữ liệu cũ trên cloud.')) return;
   const el=document.getElementById('roomSyncStatus');
   if(el) el.textContent='⏳ Đang đẩy lên...';
   const arr=getRooms();
   try{
-    const rp=await fetch(SB_TABLE,{
-      method:'POST',
-      headers:{...SB_HEADERS,'Prefer':'resolution=merge-duplicates,return=minimal'},
-      body:JSON.stringify({id:'rooms',data:{entries:arr},updated_at:new Date().toISOString()})
+    const r=await fetch(JROOM_URL,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JBIN_KEY},
+      body:JSON.stringify({entries:arr})
     });
-    if(!rp.ok) throw new Error('HTTP '+rp.status);
+    if(!r.ok) throw new Error('HTTP '+r.status);
     if(el) el.textContent='✅ Đã đẩy '+arr.length+' phòng lúc '+new Date().toLocaleTimeString('vi-VN');
-    toast('✅ Đã đẩy '+arr.length+' phòng lên Supabase!');
+    toast('✅ Đã đẩy '+arr.length+' phòng lên JSONBin!');
   }catch(e){
     if(el) el.textContent='❌ Lỗi: '+e.message;
     toast('❌ Không đẩy được: '+e.message);
@@ -1755,12 +1758,16 @@ async function pushRoomsToCloud(){
 }
 async function loadRoomsFromCloud(){
   try{
-    const r=await fetch(SB_TABLE+'?id=eq.rooms&select=data',{headers:SB_HEADERS
+    const r=await fetch(JROOM_URL+'/latest',{
+      headers:{'X-Master-Key':JBIN_KEY,'X-Bin-Meta':'false'}
     });
     if(!r.ok) return;
-    const rows=await r.json();
-    const arr=Array.isArray(rows)&&rows.length>0&&rows[0].data?rows[0].data.entries||null:null;
-    if(!arr||arr.length===0){ console.log('Supabase rooms empty, dùng mặc định'); return; }
+    const raw=await r.json();
+    let obj=raw;
+    if(raw && raw.record!==undefined) obj=raw.record;
+    const arr=Array.isArray(obj)?obj:(obj&&Array.isArray(obj.entries)?obj.entries:null);
+    if(!arr) return;
+    if(arr.length===0){ console.log('JSONBin rooms empty, dùng mặc định'); return; }
     ROOMS_CUSTOM = arr;
     localStorage.setItem(KR, JSON.stringify(arr));
     rebuildSiteDropdowns();
@@ -1776,30 +1783,17 @@ async function saveRooms(arr){
   ROOMS_CUSTOM = arr;
   localStorage.setItem(KR, JSON.stringify(arr));
   rebuildSiteDropdowns();
+  // Sync lên JSONBin
   try{
-    // Dùng PATCH với upsert để tạo nếu chưa có, cập nhật nếu đã có
-    const rp=await fetch(SB_TABLE+'?id=eq.rooms',{
-      method:'PATCH',
-      headers:{...SB_HEADERS,'Prefer':'return=minimal'},
-      body:JSON.stringify({data:{entries:arr},updated_at:new Date().toISOString()})
+    const r=await fetch(JROOM_URL,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JBIN_KEY},
+      body:JSON.stringify({entries:arr})
     });
-    if(rp.ok && rp.status!==204){
-      // Nếu không có row nào được update (204 No Content với 0 rows), thì INSERT
-    }
-    // Nếu PATCH trả 0 rows, thử INSERT
-    const count=rp.headers.get('content-range');
-    if(rp.ok && count==='*'){
-      await fetch(SB_TABLE,{
-        method:'POST',
-        headers:{...SB_HEADERS,'Prefer':'resolution=merge-duplicates,return=minimal'},
-        body:JSON.stringify({id:'rooms',data:{entries:arr},updated_at:new Date().toISOString()})
-      });
-    }
-    if(rp.ok){
+    if(r.ok){
       toast('✅ Đã lưu & sync danh sách phòng!');
     } else {
-      const t=await rp.text().catch(()=>'');
-      toast('⚠️ Lưu local OK, Supabase lỗi '+rp.status+': '+t);
+      toast('⚠️ Lưu local OK, JSONBin lỗi '+r.status);
     }
   }catch(e){
     toast('⚠️ Lưu local OK, không sync được: '+e.message);
@@ -1812,10 +1806,10 @@ async function resetRoomsToDefault(){
   localStorage.removeItem(KR);
   if(true){
     try{
-      await fetch(SB_TABLE,{
-        method:'POST',
-        headers:{...SB_HEADERS,'Prefer':'resolution=merge-duplicates,return=minimal'},
-        body:JSON.stringify({id:'rooms',data:{entries:[]},updated_at:new Date().toISOString()})
+      await fetch(JROOM_URL,{
+        method:'PUT',
+        headers:{'Content-Type':'application/json','X-Master-Key':JBIN_KEY},
+        body:JSON.stringify({entries:[]})
       });
     }catch(e){}
   }
@@ -1934,22 +1928,14 @@ function openRoomModal(id){
 }
 function addRoomToSite(site, city){
   openRoomModal(null);
-  // Tự điền Site, Khu vực
   document.getElementById('rmSite').value = site;
   document.getElementById('rmSiteSelect').value = site;
   document.getElementById('rmCity').value = city;
-  // Gợi ý tầng từ phòng cuối cùng trong site
-  const siteRooms=getRooms().filter(r=>r.site===site);
-  if(siteRooms.length>0){
-    const lastFloor=siteRooms[siteRooms.length-1].floor||'';
-    document.getElementById('rmFloor').value=lastFloor;
-    document.getElementById('rmFloor').placeholder='VD: '+lastFloor+' (tự điền từ site)';
-  }
 }
 function closeRoomModal(){ document.getElementById('rmModal').classList.remove('open'); }
 
 // ── Save room ──
-async function saveRoom(){
+function saveRoom(){
   const name  = document.getElementById('rmName').value.trim();
   const floor = document.getElementById('rmFloor').value.trim();
   const city  = document.getElementById('rmCity').value;
@@ -1958,10 +1944,13 @@ async function saveRoom(){
   if(!floor){ toast('⚠ Vui lòng nhập tầng!'); return; }
   if(!site){ toast('⚠ Vui lòng chọn hoặc nhập tên site!'); return; }
 
-  const rooms = [...getRooms()];
+  const rooms = [...getRooms()]; // clone
   const entry = {
     id:     editingRoomId !== null ? editingRoomId : (Math.max(0,...rooms.map(r=>r.id))+1),
-    n:      name, floor, city, site,
+    n:      name,
+    floor:  floor,
+    city:   city,
+    site:   site,
     vc:     document.getElementById('rmVc').value.trim(),
     tv:     document.getElementById('rmTv').value.trim(),
     ph:     document.getElementById('rmPh').value.trim(),
@@ -1975,18 +1964,15 @@ async function saveRoom(){
   if(editingRoomId !== null){
     const idx = rooms.findIndex(r=>r.id===editingRoomId);
     if(idx>-1) rooms[idx]=entry; else rooms.push(entry);
+    toast('✅ Đã cập nhật phòng '+name);
   } else {
     rooms.push(entry);
+    toast('✅ Đã thêm phòng '+name);
   }
-
-  // Lưu button loading
-  const saveBtn=document.querySelector('#rmModal .btn.bs');
-  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='⏳ Đang lưu...';}
-
-  await saveRooms(rooms); // sync Supabase
+  saveRooms(rooms);
   closeRoomModal();
   renderManage();
-  render();
+  render(); // refresh checklist
 }
 
 // ── Delete room ──
@@ -2015,7 +2001,7 @@ function sw(tab){
   // nav save btn luôn hiển thị mọi tab
   if(tab==='history'){rHist();}
   if(tab==='report'){renderReport();}
-  if(tab==='manage'&&typeof renderManage==='function'){syncRoomsFromCloud().then(()=>renderManage());}
+  if(tab==='manage'&&typeof renderManage==='function')renderManage();
 }
 
 // ── TOAST ──
@@ -2038,11 +2024,11 @@ document.getElementById('emModal').addEventListener('click',e=>{if(e.target===do
 document.getElementById('saveModal').addEventListener('click',e=>{if(e.target===document.getElementById('saveModal'))closeSave();});
 document.getElementById('rmModal').addEventListener('click',e=>{if(e.target===document.getElementById('rmModal'))closeRoomModal();});
 load();render();loadRoomsFromCloud();
-// Auto-refresh số lịch sử từ Supabase mỗi 30 giây
+// Auto-refresh số lịch sử từ JSONBin mỗi 30 giây
 async function autoRefreshBadge(){
-  if(_sbWriting) return;
+  if(_jbinWriting)return; // skip nếu đang write
   try{
-    const arr=await _sbGet();
+    const arr=await _fetchJBin();
     if(!Array.isArray(arr))return;
     document.getElementById('tb-hist').textContent=arr.length;
     if(document.getElementById('v-history').style.display!=='none'){
@@ -2055,75 +2041,76 @@ setInterval(autoRefreshBadge, 30000); // lịch sử mỗi 30 giây
 // Poll JSONBin mỗi 10 giây để sync FLOOR_CHECKED từ máy khác
 async function pollFloorSync(){
   try{
-    if(_sbWriting) return; // skip nếu đang write
-    const hist=await _sbGet();
+    const r=await fetch(JBIN_URL+'/latest',{
+      headers:{'X-Master-Key':JBIN_KEY,'X-Bin-Meta':'false'}
+    });
+    if(!r.ok) return;
+    const raw=await r.json();
+    let obj=raw;
+    if(raw&&raw.record!==undefined) obj=raw.record;
+    const hist=Array.isArray(obj)?obj:(obj&&Array.isArray(obj.entries)?obj.entries:[]);
+    localStorage.setItem(KH,JSON.stringify(hist));
 
     const dateStr=new Date().toISOString().slice(0,10);
     const today=hist.find(h=>h._type==='daily'&&h.date===dateStr);
-
-    // Reset flag — máy khác bấm Phiên mới
+    // Kiểm tra reset flag — máy khác bấm Phiên mới
     const resetEntry=hist.find(h=>h._type==='reset'&&h.date===dateStr);
     const lastResetTs=parseInt(localStorage.getItem('vib3_last_reset')||'0');
     if(resetEntry&&resetEntry.ts>lastResetTs){
       localStorage.setItem('vib3_last_reset',String(resetEntry.ts));
-      CK={};NT={};EX.clear();save();
-      FLOOR_CHECKED={};saveFC();
-      render();
-      toast('🔄 Phiên mới từ máy khác — đã reset!');
+      if(Object.keys(FLOOR_CHECKED).length>0||Object.keys(CK).length>0){
+        CK={};NT={};EX.clear();save();
+        FLOOR_CHECKED={};saveFC();
+        render();
+        toast('🔄 Phiên mới từ máy khác — đã reset toàn bộ!');
+      }
+      return;
+    }
+    // Nếu không có daily entry hôm nay → reset nếu cần
+    if(!today||!today.floors){
+      if(Object.keys(FLOOR_CHECKED).length>0){
+        FLOOR_CHECKED={};saveFC();
+        const rooms2=getRooms();
+        const pairs2=[...new Map(rooms2.map(r=>[r.site+'|'+r.floor,{site:r.site,floor:r.floor}])).values()];
+        pairs2.forEach(p=>_refreshFloorBtn(p.site,p.floor));
+      }
       return;
     }
 
-    if(!today) return;
-
-    // ── Merge CK từ rooms trên cloud (2 chiều) ──
-    const cloudRooms=today.rooms||{};
-    let ckChanged=false;
-    Object.entries(cloudRooms).forEach(([rid,entry])=>{
-      if(!entry||!entry.checks) return;
-      const key=String(rid);
-      if(!CK[key]) CK[key]={};
-      Object.entries(entry.checks).forEach(([dev,val])=>{
-        // Luôn lấy giá trị cloud nếu:
-        // 1. Local chưa có, HOẶC
-        // 2. Local đang pending (chưa check) nhưng cloud đã có
-        if(val && !CK[key][dev]){
-          CK[key][dev]=val;
-          ckChanged=true;
-        }
-      });
-    });
-    if(ckChanged){
-      save();
-      render();
-    }
-
-    // ── Merge FLOOR_CHECKED từ cloud ──
-    const cloudFloors=today.floors||{};
-    let fcChanged=false;
-    Object.entries(cloudFloors).forEach(([k,v])=>{
-      if(v&&!FLOOR_CHECKED[k]){ FLOOR_CHECKED[k]=true; fcChanged=true; }
-    });
-    if(fcChanged) saveFC();
-
-    // ── Cập nhật UI nút OK tầng ──
-    const allRooms=getRooms();
-    const floorPairs=[...new Map(allRooms.map(r=>[r.site+'|||'+r.floor,{site:r.site,floor:r.floor}])).values()];
-    floorPairs.forEach(({site,floor})=>{
-      const key=fcKey(site,floor);
-      const btn=document.getElementById('fcb-'+key);
-      if(!btn) return;
-      if(FLOOR_CHECKED[key]){
-        btn.textContent='✅ Đã lưu';
-        btn.style.cssText='padding:3px 14px;border-radius:5px;font-size:11px;font-weight:700;border:1.5px solid var(--green);background:var(--green);color:#fff;cursor:default;opacity:1;font-family:var(--sans)';
-        btn.onclick=null;
-        const hdr=document.getElementById('fhdr-'+key);
-        if(hdr) hdr.style.background='rgba(16,185,129,.08)';
-        _updateSiteBtn(site);
-      } else {
-        _refreshFloorBtn(site,floor);
+    // Cập nhật FLOOR_CHECKED từ cloud
+    let changed=false;
+    Object.entries(today.floors).forEach(([k,v])=>{
+      if(v&&!FLOOR_CHECKED[k]){
+        FLOOR_CHECKED[k]=true;
+        changed=true;
       }
     });
 
+    if(changed){
+      saveFC();
+      // Cập nhật UI các nút OK tầng
+      const rooms=getRooms();
+      const pairs=[...new Map(rooms.map(r=>[r.site+'|'+r.floor,{site:r.site,floor:r.floor}])).values()];
+      pairs.forEach(p=>{
+        const key=fcKey(p.site,p.floor);
+        if(FLOOR_CHECKED[key]){
+          // Cập nhật nút OK → Đã lưu
+          const btn=document.getElementById('fcb-'+key);
+          if(btn){
+            btn.textContent='✅ Đã lưu';
+            btn.style.background='var(--green)';
+            btn.style.color='#fff';
+            btn.style.borderColor='var(--green)';
+            btn.style.opacity='1';
+            btn.style.cursor='default';
+            btn.onclick=null;
+          }
+          const hdr=document.getElementById('fhdr-'+key);
+          if(hdr) hdr.style.background='rgba(16,185,129,.08)';
+          _updateSiteBtn(p.site);
+        }
+      });
+    }
   }catch(e){console.warn('pollFloorSync:',e.message);}
 }
 setInterval(pollFloorSync, 10000); // mỗi 10 giây
